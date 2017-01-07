@@ -1,5 +1,6 @@
 # private directories and files
-/gnupg/gnupg-key
+/gnupg
+/gnupg-key
 keys_mine_pub_priv.asc
 keys_their_pub.asc
 
