@@ -374,30 +374,4 @@ if __name__ == "__main__":
                 str_decrypt=str_decrypted))
     except KeyboardInterrupt:
         log.info("Keyboard Interrupt: Closing program.")
-        if thread_letters.is_running():
-            thread_letters.stop_controller()
-            thread_letters.join()
         sys.exit()
-
-    # # The following code is used to encrypt every key pressed on the keyboard
-    # log.info("Initializing letter thread")
-    # ready = threading.Event()
-    # thread_letters = DataController(tmp, ready)
-    # thread_letters.daemon = True
-    # thread_letters.start()
-    # ready.wait()
-    # print("Initialization complete. Begin Typing:\n")
-    # while True:
-    #     try:
-    #         # with read_char() as rc:
-    #             # letter = rc
-    #         letter = get_ch()
-    #         if tmp.is_ascii(letter):
-    #             print(letter, end="")
-    #             thread_letters.letter_add(letter)
-    #     except KeyboardInterrupt:
-    #         log.info("Keyboard Interrupt: Closing program.")
-    #         if thread_letters.is_running():
-    #             thread_letters.stop_controller()
-    #             thread_letters.join()
-    #         sys.exit()
