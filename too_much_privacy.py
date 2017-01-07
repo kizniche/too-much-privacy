@@ -65,7 +65,7 @@ class TooMuchPrivacy:
     def __init__(self, key_dir):
         self.gpg = gnupg.GPG(homedir=key_dir)
         self.gpg.encoding = 'utf-8'
-        self.passphrase = getpass.getpass("Enter passphrase to decrypt messages: ")
+        self.passphrase = None
 
     def check_keys_exist(self):
         """
@@ -75,6 +75,7 @@ class TooMuchPrivacy:
         """
         # Generate key if it doesn't exist
         if os.path.isfile(KEY_FILE_MINE):
+            self.passphrase = getpass.getpass("Enter passphrase to decrypt messages: ")
             self.import_keys()
             return True
 
@@ -165,8 +166,7 @@ class TooMuchPrivacy:
                                               passphrase=self.passphrase)
             if str(decrypted_data) == '':
                 log.info("The passphrase you entered previously could not "
-                         "decrypt the data. Please restart and enter a new "
-                         "passphrase.")
+                         "decrypt the data. Please enter a new passphrase.")
                 self.passphrase = getpass.getpass("Passphrase: ")
             else:
                 test = False
@@ -369,7 +369,7 @@ if __name__ == "__main__":
     ready.wait()
 
     while True:
-        print("Enter text to encrypt, then press "
+        print("\nEnter text to encrypt, then press "
               "Enter:\n")
         try:
             str_unencrypted = raw_input()
