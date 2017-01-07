@@ -20,8 +20,13 @@ import tty
 from gnupg import _logger
 from pprint import pprint
 
+# Ensure log file path exists
+log_path = os.path.join(os.path.join(os.getcwd(), 'gnupg'), 'test')
+if not os.path.exists(log_path):
+    os.makedirs(log_path)
+
 # Set up logging
-log = _logger.create_logger(9)
+log = _logger.create_logger(20)
 # Levels:
 # 0    NOTSET   Disable all logging.
 # 9    GNUPG    Log GnuPG's internal status messages.
@@ -55,6 +60,7 @@ def check_keys():
 
 	# Generate key if it doesn't exist
 	if not os.path.isfile('keys_pub_priv.asc'):
+		print("Key file not found. Let's generate one.")
 		try:
 			os.system('rm -rf TMP-bit-key')
 			gpg.encoding = 'utf-8'
