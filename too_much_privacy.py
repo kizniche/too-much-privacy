@@ -63,7 +63,8 @@ class TooMuchPrivacy:
     """
 
     def __init__(self, key_dir):
-        self.gpg = gnupg.GPG(homedir=key_dir)
+        self.gpg = gnupg.GPG(homedir=key_dir,
+                             binary='gpg2')
         self.gpg.encoding = 'utf-8'
         self.passphrase = None
 
@@ -361,30 +362,30 @@ if __name__ == "__main__":
         log.error("Key creation did not seem to succeed. Shutting program "
                   "down.")
         sys.exit()
-    log.info("Initializing letter thread")
-    ready = threading.Event()
-    thread_letters = DataController(tmp, ready)
-    thread_letters.daemon = True
-    thread_letters.start()
-    ready.wait()
 
-    while True:
-        print("\nEnter text to encrypt, then press "
-              "Enter:\n")
-        try:
+    try:
+        while True:
+            print("\nEnter text to encrypt, then press "
+                  "Enter:\n")
             str_unencrypted = raw_input()
             str_encrypted = tmp.encrypt_string(str_unencrypted)
             str_decrypted = tmp.decrypt_string(str_encrypted)
             log.info("Decrypted string:\n{str_decrypt}".format(
                 str_decrypt=str_decrypted))
-        except KeyboardInterrupt:
-            log.info("Keyboard Interrupt: Closing program.")
-            if thread_letters.is_running():
-                thread_letters.stop_controller()
-                thread_letters.join()
-            sys.exit()
+    except KeyboardInterrupt:
+        log.info("Keyboard Interrupt: Closing program.")
+        if thread_letters.is_running():
+            thread_letters.stop_controller()
+            thread_letters.join()
+        sys.exit()
 
     # # The following code is used to encrypt every key pressed on the keyboard
+    # log.info("Initializing letter thread")
+    # ready = threading.Event()
+    # thread_letters = DataController(tmp, ready)
+    # thread_letters.daemon = True
+    # thread_letters.start()
+    # ready.wait()
     # print("Initialization complete. Begin Typing:\n")
     # while True:
     #     try:
