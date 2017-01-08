@@ -333,9 +333,10 @@ if __name__ == '__main__':
                                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 nick=total_data_joined.split(' ', 1)[0],
                                 data=tmp.decrypt_string(total_data_joined.split(' ', 1)[1].strip('\n'))), 'green')
-                        c.output('[{time}] (test) {data}'.format(
-                            time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            data=total_data_joined.split(' ', 1)[1].strip('\n')))
+                        else:
+                            c.output('[{time}] (test) {data}'.format(
+                                time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                data=total_data_joined.split(' ', 1)[1].strip('\n')))
 
     t = Thread(target=run)
     t.daemon = True
