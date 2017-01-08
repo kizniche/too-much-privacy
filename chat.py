@@ -293,8 +293,37 @@ if __name__ == '__main__':
             for sock in read_sockets:
                 if sock == s:
                     # incoming message from remote server, s
-                    data = sock.recv(4096)
-                    if not data:
+                    timeout = 2
+                    total_data = [];
+                    data = '';
+                    # beginning time
+                    begin = time.time()
+                    while 1:
+                        # if you got some data, then break after timeout
+                        if total_data and time.time() - begin > timeout:
+                            break
+
+                        # if you got no data at all, wait a little longer, twice the timeout
+                        elif time.time() - begin > timeout * 2:
+                            break
+
+                        # recv something
+                        try:
+                            data = sock.recv(4096)
+                            if data:
+                                total_data.append(data)
+                                # change the beginning time for measurement
+                                begin = time.time()
+                            else:
+                                # sleep for sometime to indicate a gap
+                                time.sleep(0.1)
+                        except:
+                            pass
+
+                    # join all parts to make final string
+                    total_data_joined = ''.join(total_data)
+
+                    if not total_data_joined:
                         c.output('\nDisconnected from chat server')
                         sys.exit()
                     else:
