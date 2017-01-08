@@ -331,8 +331,8 @@ if __name__ == '__main__':
                         if '-----BEGIN PGP MESSAGE-----' in data:
                             c.output('[{time}] {nick} (*) {data}'.format(
                                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                nick=total_data_joined.split(' ', 1)[0],
-                                data=tmp.decrypt_string(data.split(' ', 1)[1].strip('\n'))), 'green')
+                                nick=data.split(' ', 1)[0],
+                                data=tmp.decrypt_string(total_data_joined.split(' ', 1)[1].strip('\n'))), 'green')
                         c.output('[{time}] (test) {data}'.format(
                             time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             data=total_data_joined.split(' ', 1)[1].strip('\n')))
