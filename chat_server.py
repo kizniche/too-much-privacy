@@ -30,10 +30,10 @@ def chat_server():
             if sock == server_socket:
                 sockfd, addr = server_socket.accept()
                 SOCKET_LIST.append(sockfd)
-                print("Client {:d} {:d} connected".format(*addr))
+                print("Client {:s} {:d} connected".format(*addr))
                 broadcast(server_socket,
                           sockfd,
-                          "[{:d}:{:d}] entered our chatting "
+                          "[{:s}:{:d}] entered our chatting "
                           "room\n".format(*addr))
 
             # a message from a client, not a new connection
@@ -56,10 +56,10 @@ def chat_server():
                         # at this stage, no data means probably the
                         # connection has been broken
                         broadcast(server_socket, sock,
-                                  'Client {:d} {:d} is offline\n'.format(*addr))
+                                  'Client {:s} {:d} is offline\n'.format(*addr))
                 except:
                     broadcast(server_socket, sock,
-                              'Client {:d} {:d} is offline\n'.format(*addr))
+                              'Client {:s} {:d} is offline\n'.format(*addr))
                     continue
 
     server_socket.close()
