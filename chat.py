@@ -48,7 +48,7 @@ class Command(object):
         else:
             self.soc.send('[{nick}] {line}'.format(nick=self.nick,
                                                    line=tmp.encrypt_string(line)))
-            return '[{time}] [{nick}] {line}'.format(
+            return '[{time}] [{nick}] (*) {line}'.format(
                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 nick=self.nick,
                 line=line)
@@ -259,7 +259,7 @@ if __name__ == '__main__':
             """raises"""
             raise Exception('Some Error')
 
-    c = Commander('Too Much Privacy : {nick}'.format(nick=nickname),
+    c = Commander('Too Much Privacy : {nick} (*=Encrypted)'.format(nick=nickname),
                   cmd_cb=TestCmd())
 
     # connect to remote host
@@ -291,9 +291,9 @@ if __name__ == '__main__':
                     else:
                         # print data
                         if '-----BEGIN PGP MESSAGE-----' in data:
-                            c.output('msg="{pgp}"'.format(pgp=data.split(' ', 1)[1].strip('\n')))
-                            c.output('[{time}] {data}'.format(
+                            c.output('[{time}] {nick} (*) {data}'.format(
                                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                nick=data.split(' ', 1)[0],
                                 data=tmp.decrypt_string(data.split(' ', 1)[1].strip('\n'))), 'green')
 
     t = Thread(target=run)
