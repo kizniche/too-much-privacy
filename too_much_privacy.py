@@ -94,6 +94,17 @@ class TooMuchPrivacy:
                 print("Invalid choice. Try again.")
         self.key_priv_id = key_list_priv[selected_priv_key]['keyid']
 
+        verify_passphrase = True
+        while verify_passphrase:
+            self.passphrase = getpass.getpass("\nEnter passphrase for your private key, to decrypt messages: ")
+            self.key_pub_id = self.key_priv_id
+            str_encrypted = self.encrypt_string("Success")
+            str_decrypted = self.decrypt_string(str_encrypted)
+            if str(str_decrypted) == 'Success':
+                verify_passphrase = False
+            else:
+                print("Passphrase incorrect. Try again.")
+
         print("\nPublic Keys:")
         key_list_pub = {}
         for index, each_pub_key in enumerate(self.public_keys):
@@ -110,8 +121,6 @@ class TooMuchPrivacy:
             else:
                 print("Invalid choice. Try again.")
         self.key_pub_id = key_list_pub[selected_pub_key]['keyid']
-
-        self.passphrase = getpass.getpass("\nEnter passphrase for your private key, to decrypt messages: ")
 
     def create_keys(self):
         """Create public and private PGP keys"""

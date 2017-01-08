@@ -22,8 +22,6 @@ import threading
 
 from too_much_privacy import TooMuchPrivacy
 
-NEWKEY_DIR = './gnupg-key'
-
 
 class UnknownCommand(Exception):
     def __init__(self, cmd):
@@ -299,11 +297,12 @@ if __name__ == '__main__':
                         sys.exit()
                     else:
                         # print data
-                        if '-----BEGIN PGP MESSAGE-----' in data:
+                        if data.split(' ', 1)[1].strip('\n').startswith('-----BEGIN PGP MESSAGE-----'):
                             c.output('[{time}] {nick} (*) {data}'.format(
                                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 nick=data.split(' ', 1)[0],
                                 data=tmp.decrypt_string(data.split(' ', 1)[1].strip('\n'))), 'green')
+
 
     t = Thread(target=run)
     t.daemon = True
