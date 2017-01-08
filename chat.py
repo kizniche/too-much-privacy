@@ -13,18 +13,22 @@ class UnknownCommand(Exception):
 
 
 class Command(object):
-    """ Base class to manage commands in commander
-similar to cmd.Cmd in standard library
-just extend with do_something  method to handle your commands"""
+    """
+    Base class to manage commands in commander
+    similar to cmd.Cmd in standard library
+    just extend with do_something  method to handle your commands
+    """
 
-    def __init__(self, quit_commands=['q', 'quit', 'exit'], help_commands=['help', '?', 'h']):
+    def __init__(self, s, quit_commands=['q', 'quit', 'exit'], help_commands=['help', '?', 'h']):
         self._quit_cmd = quit_commands
         self._help_cmd = help_commands
+        self.s = s
 
     def __call__(self, line):
         tokens = line.split()
         cmd = tokens[0].lower()
         args = tokens[1:]
+
         if cmd in self._quit_cmd:
             return Commander.Exit
         elif cmd in self._help_cmd:
@@ -32,7 +36,9 @@ just extend with do_something  method to handle your commands"""
         elif hasattr(self, 'do_' + cmd):
             return getattr(self, 'do_' + cmd)(*args)
         else:
-            raise UnknownCommand(cmd)
+            self.s.send(cmd)
+            return cmd
+            # raise UnknownCommand(cmd)
 
     def help(self, cmd=None):
         def std_help():
@@ -136,8 +142,8 @@ class Commander(urwid.Frame):
                ('magenta', urwid.DARK_MAGENTA, urwid.BLACK), ]
 
     def __init__(self, title,
-                 command_caption='Command:  (Tab to switch focus to upper '
-                                 'frame, where you can scroll text)',
+                 command_caption='Message:  ([Tab] to switch focus to upper '
+                                 'frame, scroll text with arrows and Page Up/Down)',
                  cmd_cb=None, max_size=1000):
         self.header = urwid.Text(title)
         self.model = urwid.SimpleListWalker([])
@@ -222,6 +228,9 @@ if __name__ == '__main__':
         sys.exit()
 
     class TestCmd(Command):
+        def __init__(self):
+            Command.__init__(self, s)
+
         def do_echo(self, *args):
             """echo - Just echos all arguments"""
             return ' '.join(args)
@@ -230,16 +239,14 @@ if __name__ == '__main__':
             raise Exception('Some Error')
 
 
-    c = Commander('Test', cmd_cb=TestCmd())
+    c = Commander('Too Much Privacy', cmd_cb=TestCmd())
 
     # Test asynch output -  e.g. coming from different thread
     import time
 
     def run():
+        c.output("Welcome. Type 'help' or '?' for a list of commands", 'error')
         while True:
-            time.sleep(1)
-            c.output('Tick', 'green')
-
             socket_list = [sys.stdin, s]
 
             # Get the list sockets which are readable
@@ -254,13 +261,7 @@ if __name__ == '__main__':
                         sys.exit()
                     else:
                         # print data
-                        c.output(data, 'green')
-
-                else:
-                    # user entered a message
-                    msg = sys.stdin.readline()
-                    s.send(msg)
-                    c.output(msg, 'green')
+                        c.output(data.strip('\n'), 'green')
 
     t = Thread(target=run)
     t.daemon = True
