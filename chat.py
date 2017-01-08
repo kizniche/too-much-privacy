@@ -233,7 +233,13 @@ if __name__ == '__main__':
               "running 'python too_much_privacy.py'.")
         sys.exit()
 
-    nickname = raw_input("Nickname:")
+    improper_nick = True
+    while improper_nick:
+        nickname = raw_input("Nickname:")
+        if ' ' in nickname:
+            print("Nicknames cannot contain spaces. Try again.")
+        else:
+            improper_nick = False
 
     host = sys.argv[1]
     port = int(sys.argv[2])
