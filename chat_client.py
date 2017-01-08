@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import datetime
 import sys, socket, select
 
 
@@ -22,7 +23,7 @@ def chat_client():
         sys.exit()
 
     print('Connected to remote host. You can start sending messages')
-    sys.stdout.write('[Me] ')
+    sys.stdout.write('')
     sys.stdout.flush()
 
     while 1:
@@ -41,14 +42,16 @@ def chat_client():
                 else:
                     # print data
                     sys.stdout.write(data)
-                    sys.stdout.write('[Me] ')
+                    sys.stdout.write('{time}\n\n'.format(
+                        time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
                     sys.stdout.flush()
 
             else:
                 # user entered a message
                 msg = sys.stdin.readline()
                 s.send(msg)
-                sys.stdout.write('[Me] ')
+                sys.stdout.write('{time}\n\n'.format(
+                    time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
                 sys.stdout.flush()
 
 

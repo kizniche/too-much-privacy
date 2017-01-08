@@ -297,12 +297,11 @@ if __name__ == '__main__':
                         sys.exit()
                     else:
                         # print data
-                        data_formatted = data.split(' ', 1)[1].strip('\n')
-                        if data_formatted.startswith('-----BEGIN PGP MESSAGE-----'):
+                        if '-----BEGIN PGP MESSAGE-----' in data:
                             c.output('[{time}] {nick} (*) {data}'.format(
                                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 nick=data.split(' ', 1)[0],
-                                data=tmp.decrypt_string(data_formatted)), 'green')
+                                data=tmp.decrypt_string(data.split(' ', 1)[1].strip('\n'))), 'green')
 
 
     t = Thread(target=run)
