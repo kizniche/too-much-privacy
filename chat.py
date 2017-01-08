@@ -19,10 +19,10 @@ class Command(object):
     just extend with do_something  method to handle your commands
     """
 
-    def __init__(self, s, quit_commands=['q', 'quit', 'exit'], help_commands=['help', '?', 'h']):
+    def __init__(self, soc, quit_commands=['q', 'quit', 'exit'], help_commands=['help', '?', 'h']):
         self._quit_cmd = quit_commands
         self._help_cmd = help_commands
-        self.s = s
+        self.soc = soc
 
     def __call__(self, line):
         tokens = line.split()
@@ -36,8 +36,8 @@ class Command(object):
         elif hasattr(self, 'do_' + cmd):
             return getattr(self, 'do_' + cmd)(*args)
         else:
-            self.s.send(cmd)
-            return cmd
+            self.soc.send('{cmd} {args}'.format(cmd=cmd, args=' '.join(args)))
+            return '[Me] {cmd} {args}'.format(cmd=cmd, args=' '.join(args))
             # raise UnknownCommand(cmd)
 
     def help(self, cmd=None):
@@ -220,6 +220,20 @@ if __name__ == '__main__':
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(2)
 
+    class TestCmd(Command):
+        def __init__(self):
+            Command.__init__(self, s)
+
+        def do_echo(self, *args):
+            """echos arguments"""
+            return ' '.join(args)
+
+        def do_raise(self, *args):
+            """raises"""
+            raise Exception('Some Error')
+
+    c = Commander('Too Much Privacy', cmd_cb=TestCmd())
+
     # connect to remote host
     try:
         s.connect((host, port))
@@ -227,26 +241,13 @@ if __name__ == '__main__':
         print('Unable to connect')
         sys.exit()
 
-    class TestCmd(Command):
-        def __init__(self):
-            Command.__init__(self, s)
-
-        def do_echo(self, *args):
-            """echo - Just echos all arguments"""
-            return ' '.join(args)
-
-        def do_raise(self, *args):
-            raise Exception('Some Error')
-
-
-    c = Commander('Too Much Privacy', cmd_cb=TestCmd())
-
     # Test asynch output -  e.g. coming from different thread
     import time
 
     def run():
         c.output("Welcome. Type 'help' or '?' for a list of commands", 'error')
         while True:
+            time.sleep(0.1)
             socket_list = [sys.stdin, s]
 
             # Get the list sockets which are readable
@@ -257,7 +258,7 @@ if __name__ == '__main__':
                     # incoming message from remote server, s
                     data = sock.recv(4096)
                     if not data:
-                        print('\nDisconnected from chat server')
+                        c.output('\nDisconnected from chat server')
                         sys.exit()
                     else:
                         # print data
