@@ -309,7 +309,7 @@ if __name__ == '__main__':
 
                         # recv something
                         try:
-                            data = sock.recv(4096)
+                            data = sock.recv(16)
                             if data:
                                 total_data.append(data)
                                 # change the beginning time for measurement
