@@ -165,8 +165,8 @@ class Commander(urwid.Frame):
         if self._cmd:
             try:
                 res = self._cmd(line)
-            except Exception, e:
-                self.output('Error: %s' % e, 'error')
+            except Exception as e:
+                self.output('Error: {err}'.format(err=e), 'error')
                 return
             if res == Commander.Exit:
                 raise urwid.ExitMainLoop()
@@ -239,6 +239,28 @@ if __name__ == '__main__':
         while True:
             time.sleep(1)
             c.output('Tick', 'green')
+
+            socket_list = [sys.stdin, s]
+
+            # Get the list sockets which are readable
+            read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [])
+
+            for sock in read_sockets:
+                if sock == s:
+                    # incoming message from remote server, s
+                    data = sock.recv(4096)
+                    if not data:
+                        print('\nDisconnected from chat server')
+                        sys.exit()
+                    else:
+                        # print data
+                        c.output(data, 'green')
+
+                else:
+                    # user entered a message
+                    msg = sys.stdin.readline()
+                    s.send(msg)
+                    c.output(msg, 'green')
 
     t = Thread(target=run)
     t.daemon = True
