@@ -22,8 +22,6 @@ import threading
 
 from too_much_privacy import TooMuchPrivacy
 
-NEWKEY_DIR = './gnupg-key'
-
 
 class UnknownCommand(Exception):
     def __init__(self, cmd):
@@ -57,6 +55,7 @@ class Command(object):
         elif str(cmd)[:1] == '/':
             raise UnknownCommand(cmd[1:])
         else:
+
             self.soc.send('[{nick}] {line}'.format(nick=self.nick,
                                                    line=tmp.encrypt_string(line)))
             return '[{time}] [{nick}] (*) {line}'.format(
@@ -242,6 +241,7 @@ if __name__ == '__main__':
 
     tmp.select_keys_and_passphrase()
 
+    nickname = None
     improper_nick = True
     while improper_nick:
         nickname = raw_input("\nNickname:")
@@ -278,13 +278,13 @@ if __name__ == '__main__':
         c.output('Unable to connect: {err}'.format(err=except_msg))
         sys.exit()
 
-    # Test asynch output -  e.g. coming from different thread
+    # Test async output -  e.g. coming from different thread
     import time
 
     def run():
         c.output("Welcome. Type '/help' for a list of commands", 'error')
         while True:
-            # time.sleep(0.1)
+            time.sleep(0.1)
             socket_list = [sys.stdin, s]
 
             # Get the list sockets which are readable
@@ -293,7 +293,7 @@ if __name__ == '__main__':
             for sock in read_sockets:
                 if sock == s:
                     # incoming message from remote server, s
-                    timeout = 2
+                    timeout = 0.2
                     total_data = []
                     data = ''
                     # beginning time
