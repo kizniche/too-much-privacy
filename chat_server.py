@@ -5,6 +5,7 @@ import datetime
 import select
 import socket
 import sys
+import time
 
 HOST = ''
 SOCKET_LIST = []
@@ -26,6 +27,7 @@ def chat_server():
         port=str(PORT)))
 
     while 1:
+        time.sleep(1)
         # get the list sockets which are ready to be read through select
         # 4th arg, time_out  = 0 : poll and never block
         ready_to_read, ready_to_write, in_error = select.select(SOCKET_LIST,
