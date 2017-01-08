@@ -1,12 +1,11 @@
 #!/usr/bin/python
-# chat_client.py
 
 import sys, socket, select
 
 
 def chat_client():
     if len(sys.argv) < 3:
-        print('Usage: python chat_client.py hostname port')
+        print('Usage: python chat.py hostname port')
         sys.exit()
 
     host = sys.argv[1]
@@ -49,7 +48,7 @@ def chat_client():
                 # user entered a message
                 msg = sys.stdin.readline()
                 s.send(msg)
-                sys.stdout.write('[Me] ');
+                sys.stdout.write('[Me] ')
                 sys.stdout.flush()
 
 
