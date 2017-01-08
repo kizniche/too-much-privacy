@@ -328,7 +328,7 @@ if __name__ == '__main__':
                         sys.exit()
                     else:
                         # print data
-                        if '-----BEGIN PGP MESSAGE-----' in data:
+                        if '-----BEGIN PGP MESSAGE-----' in total_data_joined:
                             c.output('[{time}] {nick} (*) {data}'.format(
                                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 nick=data.split(' ', 1)[0],
