@@ -8,7 +8,7 @@ import sys
 
 HOST = ''
 SOCKET_LIST = []
-RECV_BUFFER = 4096
+RECV_BUFFER = 8192
 PORT = 9009
 
 
