@@ -83,6 +83,7 @@ def broadcast(server_socket, sock, message):
             try:
                 socket.send(message)
             except:
+                print("except send socket")
                 # broken socket connection
                 socket.close()
                 # broken socket, remove it
