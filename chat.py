@@ -22,6 +22,8 @@ import threading
 
 from too_much_privacy import TooMuchPrivacy
 
+NEWKEY_DIR = './gnupg-key'
+
 
 class UnknownCommand(Exception):
     def __init__(self, cmd):
