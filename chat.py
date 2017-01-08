@@ -19,7 +19,7 @@ class Command(object):
     just extend with do_something  method to handle your commands
     """
 
-    def __init__(self, soc, quit_commands=['q', 'quit', 'exit'], help_commands=['help', '?', 'h']):
+    def __init__(self, soc, quit_commands=['/q', '/quit', '/exit'], help_commands=['/help', '/?', '/h']):
         self._quit_cmd = quit_commands
         self._help_cmd = help_commands
         self.soc = soc
@@ -33,12 +33,13 @@ class Command(object):
             return Commander.Exit
         elif cmd in self._help_cmd:
             return self.help(args[0] if args else None)
-        elif hasattr(self, 'do_' + cmd):
-            return getattr(self, 'do_' + cmd)(*args)
+        elif str(cmd)[:1] == '/' and hasattr(self, 'do_' + cmd[1:]):
+            return getattr(self, 'do_' + cmd[1:])(*args)
+        elif str(cmd)[:1] == '/':
+            raise UnknownCommand(cmd[1:])
         else:
             self.soc.send('{cmd} {args}'.format(cmd=cmd, args=' '.join(args)))
             return '[Me] {cmd} {args}'.format(cmd=cmd, args=' '.join(args))
-            # raise UnknownCommand(cmd)
 
     def help(self, cmd=None):
         def std_help():
@@ -237,8 +238,8 @@ if __name__ == '__main__':
     # connect to remote host
     try:
         s.connect((host, port))
-    except:
-        c.output('Unable to connect')
+    except Exception as except_msg:
+        c.output('Unable to connect: {err}'.format(err=except_msg))
         sys.exit()
 
     # Test asynch output -  e.g. coming from different thread
