@@ -35,7 +35,7 @@ def chat_client():
         for sock in read_sockets:
             if sock == s:
                 # incoming message from remote server, s
-                data = sock.recv(3)
+                data = sock.recv(4096)
                 if not data:
                     print('\nDisconnected from chat server')
                     sys.exit()
