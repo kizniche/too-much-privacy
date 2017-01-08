@@ -294,8 +294,8 @@ if __name__ == '__main__':
                 if sock == s:
                     # incoming message from remote server, s
                     timeout = 2
-                    total_data = [];
-                    data = '';
+                    total_data = []
+                    data = ''
                     # beginning time
                     begin = time.time()
                     while 1:
@@ -331,11 +331,12 @@ if __name__ == '__main__':
                         if '-----BEGIN PGP MESSAGE-----' in total_data_joined:
                             c.output('[{time}] {nick} (*) {data}'.format(
                                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                nick=data.split(' ', 1)[0],
+                                nick=total_data_joined.split(' ', 1)[0],
                                 data=tmp.decrypt_string(total_data_joined.split(' ', 1)[1].strip('\n'))), 'green')
                         # c.output('[{time}] (test) {data}'.format(
                         #     time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         #     data=total_data_joined.split(' ', 1)[1].strip('\n')))
+
     t = Thread(target=run)
     t.daemon = True
     t.start()
