@@ -45,9 +45,7 @@ def chat_server():
                     if data:
                         # there is something in the socket
                         broadcast(server_socket, sock,
-                                  '\r[{name}] {data}'.format(
-                                      name=str(sock.getpeername()),
-                                      data=data))
+                                  '{data}'.format(data=data))
                     else:
                         # remove the socket that's broken
                         if sock in SOCKET_LIST:

@@ -273,6 +273,7 @@ if __name__ == '__main__':
                         sys.exit()
                     else:
                         # print data
+
                         c.output('[{time}] {data}'.format(
                             time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             data=data.strip('\n')), 'green')
