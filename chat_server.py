@@ -8,7 +8,7 @@ import sys
 
 HOST = ''
 SOCKET_LIST = []
-RECV_BUFFER = 8192
+RECV_BUFFER = 4096
 PORT = 9009
 
 
@@ -81,7 +81,7 @@ def broadcast(server_socket, sock, message):
         # send the message only to peer
         if socket != server_socket and socket != sock:
             try:
-                socket.send(message)
+                socket.sendall(message)
             except:
                 print("except send socket")
                 # broken socket connection
