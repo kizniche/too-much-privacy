@@ -26,15 +26,14 @@ def chat_server():
         ready_to_read, ready_to_write, in_error = select.select(SOCKET_LIST,
                                                                 [], [], 0)
         for sock in ready_to_read:
-            # a new connection request recieved
+            # a new connection request received
             if sock == server_socket:
                 sockfd, addr = server_socket.accept()
                 SOCKET_LIST.append(sockfd)
                 print("Client {:s} {:d} connected".format(*addr))
                 broadcast(server_socket,
                           sockfd,
-                          "[{:s}:{:d}] entered our chatting "
-                          "room\n".format(*addr))
+                          "[{:s}:{:d}] entered the room\n".format(*addr))
 
             # a message from a client, not a new connection
             else:
@@ -53,11 +52,13 @@ def chat_server():
 
                         # at this stage, no data means probably the
                         # connection has been broken
+                        print("Client {:s} {:d} disconnected".format(*addr))
                         broadcast(server_socket, sock,
-                                  'Client {:s} {:d} is offline\n'.format(*addr))
+                                  'Client {:s} {:d} disconnected\n'.format(*addr))
                 except:
+                    print("Client {:s} {:d} disconnected".format(*addr))
                     broadcast(server_socket, sock,
-                              'Client {:s} {:d} is offline\n'.format(*addr))
+                              'Client {:s} {:d} disconnected\n'.format(*addr))
                     continue
 
     server_socket.close()

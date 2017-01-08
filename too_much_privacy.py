@@ -26,7 +26,7 @@ if not os.path.exists(log_path):
     os.makedirs(log_path)
 
 # Set up logging
-log = _logger.create_logger(20)
+log = _logger.create_logger(0)
 # Levels:
 # 0    NOTSET   Disable all logging.
 # 9    GNUPG    Log GnuPG's internal status messages.
@@ -35,7 +35,7 @@ log = _logger.create_logger(20)
 # 30   WARN     Warning messages.
 # 40   ERROR    Error messages and tracebacks.
 # 50   CRITICAL Unhandled exceptions and tracebacks.
-log.setLevel(20)
+log.setLevel(0)
 
 NEWKEY_DIR = './gnupg-key'
 # NAME = 'Someone'
@@ -292,70 +292,6 @@ class TooMuchPrivacy:
         return True
 
 
-def get_ch():
-    """Get one character at a time"""
-    fd = sys.stdin.fileno()
-
-    oldterm = termios.tcgetattr(fd)
-    newattr = termios.tcgetattr(fd)
-    newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
-    termios.tcsetattr(fd, termios.TCSANOW, newattr)
-
-    oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
-    fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
-
-    try:
-        while 1:
-            try:
-                c = sys.stdin.read(1)
-                break
-            except IOError:
-                pass
-    finally:
-        termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
-        fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
-    return c
-
-
-class read_char():
-    def __enter__(self):
-        self.fd = sys.stdin.fileno()
-        self.old_settings = termios.tcgetattr(self.fd)
-        tty.setraw(sys.stdin.fileno())
-        return sys.stdin.read(1)
-
-    def __exit__(self, type, value, traceback):
-        termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
-
-
-class DataController(threading.Thread):
-    def __init__(self, tmp, ready):
-        threading.Thread.__init__(self)
-        self.letter = ''
-        self.string = ''
-        self.ready = ready
-        self.running = True
-        self.tmp = tmp
-
-    def run(self):
-        self.ready.set()
-        while self.running:
-            if len(self.string) > 0:
-                str_encrypted = self.tmp.encrypt_letter(self.string[0])
-                decrypted_letter = self.tmp.decrypt_letter(str_encrypted)
-                self.string = self.string[1:]
-        log.info("Letter thread stopped")
-
-    def letter_add(self, letter):
-        self.string = self.string + letter
-
-    def stop_controller(self):
-        self.running = False
-
-    def is_running(self):
-        return self.running
-
-
 if __name__ == "__main__":
     tmp = TooMuchPrivacy(NEWKEY_DIR)
     if not tmp.check_keys_exist():
@@ -369,7 +305,9 @@ if __name__ == "__main__":
                   "Enter:\n")
             str_unencrypted = raw_input()
             str_encrypted = tmp.encrypt_string(str_unencrypted)
+            print("Encrypted string'{}'".format(str_encrypted))
             str_decrypted = tmp.decrypt_string(str_encrypted)
+            print("Decrypted string:\n{}".format(str_decrypted))
             log.info("Decrypted string:\n{str_decrypt}".format(
                 str_decrypt=str_decrypted))
     except KeyboardInterrupt:

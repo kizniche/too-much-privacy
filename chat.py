@@ -9,6 +9,10 @@ from collections import deque
 from threading import Thread
 import threading
 
+from too_much_privacy import TooMuchPrivacy
+
+NEWKEY_DIR = './gnupg-key'
+
 
 class UnknownCommand(Exception):
     def __init__(self, cmd):
@@ -43,7 +47,7 @@ class Command(object):
             raise UnknownCommand(cmd[1:])
         else:
             self.soc.send('[{nick}] {line}'.format(nick=self.nick,
-                                                   line=line))
+                                                   line=tmp.encrypt_string(line)))
             return '[{time}] [{nick}] {line}'.format(
                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 nick=self.nick,
@@ -223,6 +227,12 @@ if __name__ == '__main__':
         print('Usage: python chat.py hostname port')
         sys.exit()
 
+    tmp = TooMuchPrivacy(NEWKEY_DIR)
+    if not tmp.check_keys_exist():
+        print("Key doesn't exist. Shutting program down. Create a new key by "
+              "running 'python too_much_privacy.py'.")
+        sys.exit()
+
     nickname = raw_input("Nickname:")
 
     host = sys.argv[1]
@@ -243,7 +253,8 @@ if __name__ == '__main__':
             """raises"""
             raise Exception('Some Error')
 
-    c = Commander('Too Much Privacy', cmd_cb=TestCmd())
+    c = Commander('Too Much Privacy : {nick}'.format(nick=nickname),
+                  cmd_cb=TestCmd())
 
     # connect to remote host
     try:
@@ -256,7 +267,7 @@ if __name__ == '__main__':
     import time
 
     def run():
-        c.output("Welcome. Type 'help' or '?' for a list of commands", 'error')
+        c.output("Welcome. Type '/help' for a list of commands", 'error')
         while True:
             time.sleep(0.1)
             socket_list = [sys.stdin, s]
@@ -273,10 +284,11 @@ if __name__ == '__main__':
                         sys.exit()
                     else:
                         # print data
-
-                        c.output('[{time}] {data}'.format(
-                            time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            data=data.strip('\n')), 'green')
+                        if '-----BEGIN PGP MESSAGE-----' in data:
+                            c.output('msg="{pgp}"'.format(pgp=data.split(' ', 1)[1].strip('\n')))
+                            c.output('[{time}] {data}'.format(
+                                time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                data=tmp.decrypt_string(data.split(' ', 1)[1].strip('\n'))), 'green')
 
     t = Thread(target=run)
     t.daemon = True
