@@ -238,7 +238,7 @@ if __name__ == '__main__':
     try:
         s.connect((host, port))
     except:
-        print('Unable to connect')
+        c.output('Unable to connect')
         sys.exit()
 
     # Test asynch output -  e.g. coming from different thread
