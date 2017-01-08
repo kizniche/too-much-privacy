@@ -22,10 +22,11 @@ class Command(object):
     just extend with do_something  method to handle your commands
     """
 
-    def __init__(self, soc, quit_commands=['/q', '/quit', '/exit'], help_commands=['/help', '/?', '/h']):
+    def __init__(self, soc, nick, quit_commands=['/q', '/quit', '/exit'], help_commands=['/help', '/?', '/h']):
         self._quit_cmd = quit_commands
         self._help_cmd = help_commands
         self.soc = soc
+        self.nick = nick
 
     def __call__(self, line):
         tokens = line.split()
@@ -41,11 +42,12 @@ class Command(object):
         elif str(cmd)[:1] == '/':
             raise UnknownCommand(cmd[1:])
         else:
-            self.soc.send('{cmd} {args}'.format(cmd=cmd, args=' '.join(args)))
-            return '[{time}] [Me] {cmd} {args}'.format(
+            self.soc.send('[{nick}] {line}'.format(nick=self.nick,
+                                                   line=line))
+            return '[{time}] [{nick}] {line}'.format(
                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                cmd=cmd,
-                args=' '.join(args))
+                nick=self.nick,
+                line=line)
 
     def help(self, cmd=None):
         def std_help():
@@ -221,6 +223,8 @@ if __name__ == '__main__':
         print('Usage: python chat.py hostname port')
         sys.exit()
 
+    nickname = raw_input("Nickname:")
+
     host = sys.argv[1]
     port = int(sys.argv[2])
 
@@ -229,7 +233,7 @@ if __name__ == '__main__':
 
     class TestCmd(Command):
         def __init__(self):
-            Command.__init__(self, s)
+            Command.__init__(self, s, nickname)
 
         def do_echo(self, *args):
             """echos arguments"""
