@@ -1,7 +1,10 @@
 #!/usr/bin/python
 #  chat_server.py
 
-import sys, socket, select
+import datetime
+import select
+import socket
+import sys
 
 HOST = ''
 SOCKET_LIST = []
@@ -18,7 +21,9 @@ def chat_server():
     # add server socket object to the list of readable connections
     SOCKET_LIST.append(server_socket)
 
-    print("Chat server started on port {port}".format(port=str(PORT)))
+    print("[{time}] Chat server started on port {port}".format(
+        time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        port=str(PORT)))
 
     while 1:
         # get the list sockets which are ready to be read through select
@@ -30,7 +35,9 @@ def chat_server():
             if sock == server_socket:
                 sockfd, addr = server_socket.accept()
                 SOCKET_LIST.append(sockfd)
-                print("Client {:s} {:d} connected".format(*addr))
+                print("[{time}] Client {:s} {:d} connected".format(
+                    time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    *addr))
                 broadcast(server_socket,
                           sockfd,
                           "[{:s}:{:d}] entered the room\n".format(*addr))
@@ -52,11 +59,15 @@ def chat_server():
 
                         # at this stage, no data means probably the
                         # connection has been broken
-                        print("Client {:s} {:d} disconnected".format(*addr))
+                        print("[{time}] Client {:s} {:d} disconnected".format(
+                            time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            *addr))
                         broadcast(server_socket, sock,
                                   'Client {:s} {:d} disconnected\n'.format(*addr))
                 except:
-                    print("Client {:s} {:d} disconnected".format(*addr))
+                    print("[{time}] Client {:s} {:d} disconnected".format(
+                        time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        *addr))
                     broadcast(server_socket, sock,
                               'Client {:s} {:d} disconnected\n'.format(*addr))
                     continue

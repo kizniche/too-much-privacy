@@ -224,18 +224,16 @@ class Commander(urwid.Frame):
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print('Usage: python chat.py hostname port')
+        print('Usage: python chat.py host/IP port')
         sys.exit()
 
-    tmp = TooMuchPrivacy(NEWKEY_DIR)
-    if not tmp.check_keys_exist():
-        print("Key doesn't exist. Shutting program down. Create a new key by "
-              "running 'python too_much_privacy.py'.")
-        sys.exit()
+    tmp = TooMuchPrivacy()
+
+    tmp.select_keys_and_passphrase()
 
     improper_nick = True
     while improper_nick:
-        nickname = raw_input("Nickname:")
+        nickname = raw_input("\nNickname:")
         if ' ' in nickname:
             print("Nicknames cannot contain spaces. Try again.")
         else:

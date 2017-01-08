@@ -55,6 +55,9 @@ PREFERENCES = None
 KEY_FILE_MINE = 'keys_mine_pub_priv.asc'
 KEY_FILE_THEIR = 'keys_their_pub.asc'
 
+home = os.path.expanduser('~')
+gpg_path = os.path.join(home, '.gnupg')
+
 
 class TooMuchPrivacy:
     """
@@ -62,25 +65,56 @@ class TooMuchPrivacy:
     A class for encrypting and decrypting communication
     """
 
-    def __init__(self, key_dir):
-        self.gpg = gnupg.GPG(homedir=key_dir,
+    def __init__(self):
+        self.gpg = gnupg.GPG(homedir=gpg_path,
                              binary='gpg2')
         self.gpg.encoding = 'utf-8'
+        self.public_keys = self.gpg.list_keys()
+        self.private_keys = self.gpg.list_keys(True)
+        self.key_priv_id = None
+        self.key_pub_id = None
         self.passphrase = None
 
-    def check_keys_exist(self):
-        """
-        Check if a PGP key already exists and if not, create one.
-        Return True if yes or suscessfully created
-        Return False if there was an error
-        """
-        # Generate key if it doesn't exist
-        if os.path.isfile(KEY_FILE_MINE):
-            self.passphrase = getpass.getpass("Enter passphrase to decrypt messages: ")
-            self.import_keys()
-            return True
+    def select_keys_and_passphrase(self):
+        print("Welcome to Too Much Privacy. Let's get started with selecting what keys to use.")
+        print("\nPrivate Keys:")
+        key_list_priv = {}
+        for index, each_priv_key in enumerate(self.private_keys):
+            print("{index}: {key} {uid}".format(index=index+1,
+                                                key=each_priv_key['keyid'],
+                                                uid=each_priv_key['uids'][0]))
+            key_list_priv[str(index+1)] = each_priv_key
 
-        print("Key file not found. Let's generate one.")
+        key_priv_not_selected = True
+        while key_priv_not_selected:
+            selected_priv_key = raw_input("\nSelect the number of the private key to use: ")
+            if str(selected_priv_key) in key_list_priv:
+                key_priv_not_selected = False
+            else:
+                print("Invalid choice. Try again.")
+        self.key_priv_id = key_list_priv[selected_priv_key]['keyid']
+
+        print("\nPublic Keys:")
+        key_list_pub = {}
+        for index, each_pub_key in enumerate(self.public_keys):
+            print("{index}: {key} {uid}".format(index=index+1,
+                                                key=each_pub_key['keyid'],
+                                                uid=each_pub_key['uids'][0]))
+            key_list_pub[str(index + 1)] = each_pub_key
+
+        key_pub_not_selected = True
+        while key_pub_not_selected:
+            selected_pub_key = raw_input("\nSelect the number of the public key to use: ")
+            if str(selected_pub_key) in key_list_pub:
+                key_pub_not_selected = False
+            else:
+                print("Invalid choice. Try again.")
+        self.key_pub_id = key_list_pub[selected_pub_key]['keyid']
+
+        self.passphrase = getpass.getpass("\nEnter passphrase for your private key, to decrypt messages: ")
+
+    def create_keys(self):
+        """Create public and private PGP keys"""
         try:
             os.system('rm -rf TMP-bit-key')
 
@@ -115,12 +149,24 @@ class TooMuchPrivacy:
 
             # Create the batch file
             batchfile = self.create_batch_file(allparams)
+
             # Create the key
             key, fingerprint = self.create_key(batchfile)
+
             # Export private and public key
             self.export_keys(key)
+
             # Import keys
             self.import_keys()
+
+            # List Keys
+            public_keys = self.gpg.list_keys()
+            private_keys = self.gpg.list_keys(True)
+            log.info('public keys:\n')
+            pprint(public_keys)
+            log.info('private keys:\n')
+            pprint(private_keys)
+
             return True
 
         except Exception as except_msg:
@@ -161,109 +207,22 @@ class TooMuchPrivacy:
 
     def decrypt_string(self, str_encrypted):
         """Decrypt an encrypted string"""
-        test = True
-        while test:
-            decrypted_data = self.gpg.decrypt(str_encrypted,
-                                              passphrase=self.passphrase)
-            if str(decrypted_data) == '':
-                log.info("The passphrase you entered previously could not "
-                         "decrypt the data. Please enter a new passphrase.")
-                self.passphrase = getpass.getpass("Passphrase: ")
-            else:
-                test = False
-        return decrypted_data
-
-    def decrypt_letter(self, str_encrypted):
-        """
-        Decrypt an encrypted string, then return a single letter from the
-        decrypted string based on the first three digits of the decrypted
-        string that represents the position in the characters after the
-        first three characters.
-        """
         decrypted_data = self.gpg.decrypt(str_encrypted,
                                           passphrase=self.passphrase)
-        log.info("Decrypted string:\n{msg}".format(msg=str(decrypted_data)))
-
-        if str(decrypted_data) == '':
-            log.info("The passphrase you entered previously could not "
-                     "decrypt the data. Please enter a new passphrase.")
-            self.passphrase = getpass.getpass("Passphrase: ")
-            print("New passphrase accepted. Begin Typing:\n")
-            return None
-
-        # Get letter position from first 3 numbers
-        letter_position = int(str(decrypted_data)[:3])
-        log.info("Letter position:\n{pos}".format(pos=letter_position))
-
-        # Determine letter
-        decrypted_letter = str(decrypted_data)[letter_position + 3]
-        log.info("Letter:\n{letter}".format(letter=decrypted_letter))
-
-        return decrypted_letter
-
-    def encrypt_letter(self, input_letter):
-        """Encrypt every character entered using PGP"""
-        # input_letter = raw_input('Letter: ')
-        if len(input_letter) > 1:
-            log.error("Error: Greater than 1 character: {char}".format(char=len(input_letter)))
-            sys.exit()
-
-        # Create random string of 125 characters
-        random_id = ''.join([random.choice(
-            string.ascii_letters + string.digits + string.punctuation + ' ') for _ in xrange(124)])
-
-        # Chose random number between 0 and 124
-        int_place_in_string = random.randint(0, 124)
-
-        # Create random number and random string, then place input letter
-        # into string at position determined by random number
-        str_secret = "{0:0>3}".format(int_place_in_string) + random_id[:int_place_in_string] + input_letter + random_id[
-                                                                                                              int_place_in_string:]
-        # print(str_secret)
-
-        # Create SHA256 hash from secret string
-        input_str_hash = hashlib.sha512(str_secret.encode('utf-8'))
-        hex_dig = input_str_hash.hexdigest()
-        # print(hex_dig)
-
-        # List Keys
-        public_keys = self.gpg.list_keys()
-        private_keys = self.gpg.list_keys(True)
-        # log.info('public keys:\n{pub_keys}'.format(pub_keys=public_keys))
-        # pprint(public_keys)
-        # print('private keys:')
-        # pprint(private_keys)
-
-        # Encrypt Data
-        unstr_encrypted = str_secret
-        encrypted_data = self.gpg.encrypt(unstr_encrypted, public_keys[0]['keyid'])
-        str_encrypted = str(encrypted_data)
-        # print('\nok: {ok}'.format(ok=encrypted_data.ok))
-        # print('\nstatus: {stat}'.format(stat=encrypted_data.status))
-        # print('\nstderr: {err}'.format(err=encrypted_data.stderr))
-        log.info('unstr_encrypted:\n{ue_str}'.format(ue_str=unstr_encrypted))
-        log.info('encrypted string:\n{e_str}'.format(e_str=str_encrypted))
-
-        return str_encrypted
+        if str(decrypted_data) != '':
+            return decrypted_data
+        else:
+            return "*Passphrase unable to decrypt data*"
 
     def encrypt_string(self, str_unencrypted):
         """Encrypt every character entered using PGP"""
-        # List Keys
-        public_keys = self.gpg.list_keys()
-        private_keys = self.gpg.list_keys(True)
-        # log.info('public keys:\n{pub_keys}'.format(pub_keys=public_keys))
-        # pprint(public_keys)
-        # print('private keys:')
-        # pprint(private_keys)
-
-        # Encrypt Data
-        encrypted_data = self.gpg.encrypt(str_unencrypted, public_keys[0]['keyid'])
+        encrypted_data = self.gpg.encrypt(str_unencrypted, self.key_pub_id)
         str_encrypted = str(encrypted_data)
         # print('\nok: {ok}'.format(ok=encrypted_data.ok))
         # print('\nstatus: {stat}'.format(stat=encrypted_data.status))
         # print('\nstderr: {err}'.format(err=encrypted_data.stderr))
-        log.info('unencrypted string:\n{ue_str}'.format(ue_str=str_unencrypted))
-        log.info('encrypted string:\n{e_str}'.format(e_str=str_encrypted))
+        log.info('Original string:\n{ue_str}'.format(ue_str=str_unencrypted))
+        log.info('Encrypted string:\n{e_str}'.format(e_str=str_encrypted))
 
         return str_encrypted
 
@@ -293,11 +252,7 @@ class TooMuchPrivacy:
 
 
 if __name__ == "__main__":
-    tmp = TooMuchPrivacy(NEWKEY_DIR)
-    if not tmp.check_keys_exist():
-        log.error("Key creation did not seem to succeed. Shutting program "
-                  "down.")
-        sys.exit()
+    tmp = TooMuchPrivacy()
 
     try:
         while True:

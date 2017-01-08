@@ -4,5 +4,9 @@ This is a repository for experimenting with PGP encryption.
 
 ## Requirements
 
-gpg version 2 (gnupg2)
-urwid
+  - gpg version 2 (gnupg2)
+  - urwid
+
+## Features
+
+  - End-to-end PGP encryption
