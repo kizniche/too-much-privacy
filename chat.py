@@ -284,7 +284,7 @@ if __name__ == '__main__':
     def run():
         c.output("Welcome. Type '/help' for a list of commands", 'error')
         while True:
-            time.sleep(0.1)
+            # time.sleep(0.1)
             socket_list = [sys.stdin, s]
 
             # Get the list sockets which are readable
@@ -333,6 +333,7 @@ if __name__ == '__main__':
                                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 nick=total_data_joined.split(' ', 1)[0],
                                 data=tmp.decrypt_string(total_data_joined.split(' ', 1)[1].strip('\n'))), 'green')
+                        # elif
                         # c.output('[{time}] (test) {data}'.format(
                         #     time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         #     data=total_data_joined.split(' ', 1)[1].strip('\n')))
