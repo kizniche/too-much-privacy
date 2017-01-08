@@ -1,6 +1,9 @@
 #!/usr/bin/python
 
-import sys, socket, select
+import datetime
+import select
+import socket
+import sys
 import urwid
 from collections import deque
 from threading import Thread
@@ -39,7 +42,10 @@ class Command(object):
             raise UnknownCommand(cmd[1:])
         else:
             self.soc.send('{cmd} {args}'.format(cmd=cmd, args=' '.join(args)))
-            return '[Me] {cmd} {args}'.format(cmd=cmd, args=' '.join(args))
+            return '[{time}] [Me] {cmd} {args}'.format(
+                time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                cmd=cmd,
+                args=' '.join(args))
 
     def help(self, cmd=None):
         def std_help():
@@ -143,8 +149,8 @@ class Commander(urwid.Frame):
                ('magenta', urwid.DARK_MAGENTA, urwid.BLACK), ]
 
     def __init__(self, title,
-                 command_caption='Message:  ([Tab] to switch focus to upper '
-                                 'frame, scroll text with arrows and Page Up/Down)',
+                 command_caption='Message: (Use [Tab] to switch to upper '
+                                 'frame, scroll with arrows and Page Up/Down)',
                  cmd_cb=None, max_size=1000):
         self.header = urwid.Text(title)
         self.model = urwid.SimpleListWalker([])
@@ -263,7 +269,9 @@ if __name__ == '__main__':
                         sys.exit()
                     else:
                         # print data
-                        c.output(data.strip('\n'), 'green')
+                        c.output('[{time}] {data}'.format(
+                            time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            data=data.strip('\n')), 'green')
 
     t = Thread(target=run)
     t.daemon = True
