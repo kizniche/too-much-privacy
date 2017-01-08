@@ -334,7 +334,7 @@ if __name__ == '__main__':
                                 c.output('[{time}] {nick} (*) {data}'.format(
                                     time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                     nick=total_data_joined.split(' ', 1)[0],
-                                    data='{data}-----END PGP MESSAGE-----'.format(tmp.decrypt_string(each_data.split(' ', 1)[1].strip('\n')))), 'green')
+                                    data='{data}-----END PGP MESSAGE-----'.format(data=tmp.decrypt_string(each_data.split(' ', 1)[1].strip('\n')))), 'green')
                             else:
                                 c.output('[{time}] (test) {data}'.format(
                                     time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
