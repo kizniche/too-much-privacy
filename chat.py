@@ -1,5 +1,16 @@
 #!/usr/bin/python
 
+# gnupg commands:
+#
+# List secret keys: gpg2 --list-secret-keys
+# List public keys: gpg2 --list-keys
+#
+# Export secret key: gpg2 --export-secret-keys -a "User Name" > secret.asc
+# Export public key: gpg2 --export -a "User Name" > public.asc
+#
+# Import public key: gpg2 --import public.asc
+# Import private key: gpg2 --import private.asc
+
 import datetime
 import select
 import socket
