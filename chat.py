@@ -55,7 +55,6 @@ class Command(object):
         elif str(cmd)[:1] == '/':
             raise UnknownCommand(cmd[1:])
         else:
-
             self.soc.send('[{nick}] {line}'.format(nick=self.nick,
                                                    line=tmp.encrypt_string(line)))
             return '[{time}] [{nick}] (*) {line}'.format(
@@ -328,15 +327,18 @@ if __name__ == '__main__':
                         sys.exit()
                     else:
                         # print data
-                        if '-----BEGIN PGP MESSAGE-----' in total_data_joined:
-                            c.output('[{time}] {nick} (*) {data}'.format(
-                                time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                nick=total_data_joined.split(' ', 1)[0],
-                                data=tmp.decrypt_string(total_data_joined.split(' ', 1)[1].strip('\n'))), 'green')
-                        else:
-                            c.output('[{time}] (test) {data}'.format(
-                                time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                data=total_data_joined.split(' ', 1)[1].strip('\n')))
+                        data_split = total_data_joined.split("-----END PGP MESSAGE-----")
+                        # print('Message="{}"'.format(data_split))
+                        for each_data in data_split:
+                            if '-----BEGIN PGP MESSAGE-----' in each_data:
+                                c.output('[{time}] {nick} (*) {data}'.format(
+                                    time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                    nick=total_data_joined.split(' ', 1)[0],
+                                    data='{data}-----END PGP MESSAGE-----'.format(tmp.decrypt_string(each_data.split(' ', 1)[1].strip('\n')))), 'green')
+                            else:
+                                c.output('[{time}] (test) {data}'.format(
+                                    time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                    data=total_data_joined.split(' ', 1)[1].strip('\n')))
 
     t = Thread(target=run)
     t.daemon = True

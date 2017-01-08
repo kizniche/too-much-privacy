@@ -52,12 +52,9 @@ def chat_server():
                     data = sock.recv(RECV_BUFFER)
                     if data:
                         # there is something in the socket
-                        data_split = data.split("-----END PGP MESSAGE-----")
                         # print('Message="{}"'.format(data_split))
-                        for each_data in data_split:
-                            if "-----BEGIN PGP MESSAGE-----" in each_data:
-                                broadcast(server_socket, sock,
-                                          '{data}-----END PGP MESSAGE-----'.format(data=each_data))
+                        broadcast(server_socket, sock,
+                                  '{data}'.format(data=data))
 
                     else:
                         # remove the socket that's broken
