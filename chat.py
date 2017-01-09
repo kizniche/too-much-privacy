@@ -242,16 +242,7 @@ if __name__ == '__main__':
 
     tmp = TooMuchPrivacy()
 
-    tmp.select_keys_and_passphrase()
-
-    nickname = None
-    improper_nick = True
-    while improper_nick:
-        nickname = raw_input("\nNickname:")
-        if ' ' in nickname:
-            print("Nicknames cannot contain spaces. Try again.")
-        else:
-            improper_nick = False
+    nickname = tmp.select_keys_and_passphrase()
 
     host = sys.argv[1]
     port = int(sys.argv[2])
@@ -261,19 +252,11 @@ if __name__ == '__main__':
 
     class TestCmd(Command):
         def __init__(self):
-            self.nick = nickname
             Command.__init__(self, s, nickname)
 
         def do_echo(self, *args):
             """echos arguments"""
             return ' '.join(args)
-
-        def do_nick(self, *args):
-            """Changes nickname"""
-            s.send("/nick {nick}".format(nick=args[0]))
-            c.output("Changed nick from {prev_nick} to {nick}".format(
-                prev_nick=self.nick, nick=args[0]), "blue")
-            Command.change_nick(self, args[0])
 
         def do_raise(self, *args):
             """raises"""
@@ -287,8 +270,6 @@ if __name__ == '__main__':
     except Exception as except_msg:
         c.output('Unable to connect: {err}'.format(err=except_msg))
         sys.exit()
-
-    s.send("/nick {nick}".format(nick=nickname))
 
     def run():
         c.output("Welcome. Type '/help' for a list of commands", 'error')

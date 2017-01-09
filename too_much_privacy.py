@@ -122,6 +122,8 @@ class TooMuchPrivacy:
                 print("Invalid choice. Try again.")
         self.key_pub_id = key_list_pub[selected_pub_key]['keyid']
 
+        return key_list_priv[selected_priv_key]['uids'][0]
+
     def create_keys(self):
         """Create public and private PGP keys"""
         try:

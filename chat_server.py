@@ -39,7 +39,7 @@ def chat_server():
             if sock == server_socket:
                 sockfd, addr = server_socket.accept()
                 SOCKET_LIST.append(sockfd)
-                user_list[addr[1]] = ''
+                user_list['{ip}:{port}'.format(ip=addr[0], port=addr[1])] = ''
                 print_and_broadcast(
                     server_socket,
                     sockfd,
@@ -55,29 +55,8 @@ def chat_server():
                     if data:
                         # there is something in the socket
                         # print('Message="{}"'.format(data_split))
-                        if data.lower().startswith('/nick'):
-                            nick = data.split(' ')[1]
-                            if user_list['{ip}:{port}'.format(ip=addr[0], port=addr[1])] == '':
-                                print_and_broadcast(
-                                    server_socket,
-                                    sock,
-                                    "{addr}:{port} set nick to {nick}".format(
-                                        addr=addr[0],
-                                        port=addr[1],
-                                        nick=nick))
-                            else:
-                                print_and_broadcast(
-                                    server_socket,
-                                    sock,
-                                    "{addr}:{port} {prev_nick} changed nick to {nick}".format(
-                                        addr=addr[0],
-                                        port=addr[1],
-                                        prev_nick=user_list['{ip}:{port}'.format(ip=addr[0], port=addr[1])],
-                                        nick=nick))
-                            user_list['{ip}:{port}'.format(ip=addr[0], port=addr[1])] = nick
-                        else:
-                            broadcast(server_socket, sock,
-                                      '{data}'.format(data=data))
+                        broadcast(server_socket, sock,
+                                  '{data}'.format(data=data))
 
                     else:
                         # remove the socket that's broken
@@ -90,14 +69,14 @@ def chat_server():
                             server_socket,
                             sock,
                             '{nick} ({:s}:{:d}) disconnected'.format(
-                                nick=user_list[addr[1]],
+                                nick=user_list['{ip}:{port}'.format(ip=addr[0], port=addr[1])],
                                 *addr))
                 except:
                     print_and_broadcast(
                         server_socket,
                         sock,
                         '{nick} ({:s}:{:d}) disconnected'.format(
-                            nick=user_list[addr[1]],
+                            nick=user_list['{ip}:{port}'.format(ip=addr[0], port=addr[1])],
                             *addr))
                     continue
 
