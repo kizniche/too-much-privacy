@@ -317,7 +317,8 @@ if __name__ == '__main__':
                         # print data
                         # data_split = total_data_joined.split("-----END PGP MESSAGE-----")
                         # print('Message="{}"'.format(data_split))
-                        # c.output('message="{msg}"'.format(msg=total_data_joined))
+                        c.output('message1="{msg}"'.format(msg=total_data_joined))
+                        c.output('message2="{msg}"'.format(msg=json.loads(total_data_joined)))
                         rec_nick = None
                         rec_data = None
                         for each_data_key, each_data_value in json.loads(total_data_joined).iteritems():
@@ -326,13 +327,14 @@ if __name__ == '__main__':
                             elif each_data_key == 'data':
                                 rec_data = each_data_value
                         if '-----BEGIN PGP MESSAGE-----' in rec_data:
-                            c.output('[{time}] {nick} (*) {data}'.format(
+                            c.output('[{time}] [{nick}] (*) {data}'.format(
                                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 nick=rec_nick,
                                 data=tmp.decrypt_string(rec_data)), 'green')
-                        elif rec_data != '\n':
-                            c.output('[{time}] (Server) {data}'.format(
+                        else:
+                            c.output('[{time}] [{nick}] (Server) {data}'.format(
                                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                nick=rec_nick,
                                 data=rec_data))
 
     t = Thread(target=run)
