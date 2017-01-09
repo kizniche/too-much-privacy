@@ -1,0 +1,7 @@
+*Label*font: Verdana 8 bold
+*borderwidth: 25
+*highlightthickness: 0
+*font: Verdana -13
+*Entry*background: white
+*Text*background: white
+*Listbox*background: white
