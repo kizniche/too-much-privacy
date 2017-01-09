@@ -261,6 +261,7 @@ if __name__ == '__main__':
 
     class TestCmd(Command):
         def __init__(self):
+            self.nick = nickname
             Command.__init__(self, s, nickname)
 
         def do_echo(self, *args):
@@ -270,7 +271,8 @@ if __name__ == '__main__':
         def do_nick(self, *args):
             """Changes nickname"""
             s.send("/nick {nick}".format(nick=args[0]))
-            c.output("Changed nick to {nick}".format(nick=args[0]), "blue")
+            c.output("Changed nick from {prev_nick} to {nick}".format(
+                prev_nick=self.nick, nick=args[0]), "blue")
             Command.change_nick(self, args[0])
 
         def do_raise(self, *args):
@@ -331,7 +333,7 @@ if __name__ == '__main__':
                     total_data_joined = ''.join(total_data)
 
                     if not total_data_joined:
-                        c.output('\nDisconnected from chat server')
+                        c.output('Disconnected from chat server')
                         sys.exit()
                     else:
                         # print data

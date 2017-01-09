@@ -43,7 +43,7 @@ def chat_server():
                 print_and_broadcast(
                     server_socket,
                     sockfd,
-                    "[{:s}:{:d}] entered the room".format(*addr))
+                    "{:s}:{:d} Connected".format(*addr))
                 time.sleep(1)
 
             # a message from a client, not a new connection
@@ -57,7 +57,7 @@ def chat_server():
                         # print('Message="{}"'.format(data_split))
                         if data.lower().startswith('/nick'):
                             nick = data.split(' ')[1]
-                            if user_list[addr[1]] == '':
+                            if user_list['{ip}:{port}'.format(ip=addr[0], port=addr[1])] == '':
                                 print_and_broadcast(
                                     server_socket,
                                     sock,
@@ -69,12 +69,12 @@ def chat_server():
                                 print_and_broadcast(
                                     server_socket,
                                     sock,
-                                    "({addr}:{port}) {prev_nick} changed nick to {nick}".format(
+                                    "{addr}:{port} {prev_nick} changed nick to {nick}".format(
                                         addr=addr[0],
                                         port=addr[1],
-                                        prev_nick=user_list[addr[1]],
-                                        nick=data.split(' ')[1]).strip('\n'))
-                            user_list[addr[1]] = data.split(' ')[1]
+                                        prev_nick=user_list['{ip}:{port}'.format(ip=addr[0], port=addr[1])],
+                                        nick=nick))
+                            user_list['{ip}:{port}'.format(ip=addr[0], port=addr[1])] = nick
                         else:
                             broadcast(server_socket, sock,
                                       '{data}'.format(data=data))
@@ -89,14 +89,14 @@ def chat_server():
                         print_and_broadcast(
                             server_socket,
                             sock,
-                            '{nick} ({:s}:{:d}) disconnected\n'.format(
+                            '{nick} ({:s}:{:d}) disconnected'.format(
                                 nick=user_list[addr[1]],
                                 *addr))
                 except:
                     print_and_broadcast(
                         server_socket,
                         sock,
-                        '{nick} ({:s}:{:d}) disconnected\n'.format(
+                        '{nick} ({:s}:{:d}) disconnected'.format(
                             nick=user_list[addr[1]],
                             *addr))
                     continue

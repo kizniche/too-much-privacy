@@ -42,7 +42,7 @@ def chat_client():
                 else:
                     # print data
                     sys.stdout.write(data)
-                    sys.stdout.write('{time}\n\n'.format(
+                    sys.stdout.write('\n{time}\n\n'.format(
                         time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
                     sys.stdout.flush()
 
@@ -50,7 +50,7 @@ def chat_client():
                 # user entered a message
                 msg = sys.stdin.readline()
                 s.send(msg)
-                sys.stdout.write('{time}\n\n'.format(
+                sys.stdout.write('\n{time}\n\n'.format(
                     time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
                 sys.stdout.flush()
 
