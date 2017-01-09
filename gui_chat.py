@@ -15,47 +15,47 @@ class FrameOne(tk.Frame):
     def __init__(self, parent, name, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
-        self.parent.label = tk.Label(self, text="Enter your friend's IP")
-        self.parent.label.pack(side=tk.LEFT)
-        self.parent.entryhost = tk.Entry(self)
-        self.parent.entryhost.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        self.parent.entryhost.insert(0, "127.0.0.1")
-        self.parent.client_host = str(self.parent.entryhost.get())
-        self.parent.label = tk.Label(self, text="Username")
-        self.parent.label.pack(side=tk.LEFT)
-        self.parent.username = tk.Entry(self)
-        self.parent.username.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        self.parent.username.insert(0, name)
-        self.parent.connectButton = tk.Button(
+        self.label = tk.Label(self, text="Enter your friend's IP")
+        self.label.pack(side=tk.LEFT)
+        self.entryhost = tk.Entry(self)
+        self.entryhost.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        self.entryhost.insert(0, "127.0.0.1")
+        self.client_host = str(self.entryhost.get())
+        self.label = tk.Label(self, text="Username")
+        self.label.pack(side=tk.LEFT)
+        self.username = tk.Entry(self)
+        self.username.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        self.username.insert(0, name)
+        self.connectButton = tk.Button(
             self, text="Connect", command=self.parent.connect_to_server)
-        self.parent.connectButton.pack(side=tk.LEFT)
+        self.connectButton.pack(side=tk.LEFT)
 
-        # self.parent.wm_iconbitmap("shinobi.ico")
-        # self.parent.option_readfile("optionDB")
+        # self.wm_iconbitmap("shinobi.ico")
+        # self.option_readfile("optionDB")
 
 
 class FrameTwo(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
-        self.parent.scrollbar2 = tk.Scrollbar(self)
-        self.parent.scrollbar2.pack(side=tk.RIGHT, fill=tk.Y)
-        self.parent.listb1 = tk.Text(self)
-        self.parent.listb1.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.parent.listb1.config(yscrollcommand=self.parent.scrollbar2.set)
-        self.parent.scrollbar2.config(command=self.parent.listb1.yview)
+        self.scrollbar2 = tk.Scrollbar(self)
+        self.scrollbar2.pack(side=tk.RIGHT, fill=tk.Y)
+        self.listb1 = tk.Text(self)
+        self.listb1.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.listb1.config(yscrollcommand=self.scrollbar2.set)
+        self.scrollbar2.config(command=self.listb1.yview)
 
 
 class FrameThree(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
-        self.parent.textboxsend = tk.Entry(self)
-        self.parent.textboxsend.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        self.parent.textboxsend.bind('<Return>', self.parent.send_id)
-        self.parent.textboxsend.focus_set()
-        self.parent.label = tk.Label(self, text="Enter to Send")
-        self.parent.label.pack(side=tk.LEFT)
+        self.textboxsend = tk.Entry(self)
+        self.textboxsend.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        self.textboxsend.bind('<Return>', self.parent.send_id)
+        self.textboxsend.focus_set()
+        self.label = tk.Label(self, text="Enter to Send")
+        self.label.pack(side=tk.LEFT)
 
 
 class EncryptedChat(tk.Frame):
@@ -149,8 +149,8 @@ class EncryptedChat(tk.Frame):
                     if recv_msg:
                         cmd, recv_msg = ord(recv_msg[0]), recv_msg[1:]
                         if cmd == self.cmd_msg:
-                            self.listb1.insert(tk.END, self.decrypt_my_message(recv_msg.strip()) + "\n")
-                            self.listb1.yview(tk.END)
+                            self.frame_two.listb1.insert(tk.END, self.decrypt_my_message(recv_msg.strip()) + "\n")
+                            self.frame_two.listb1.yview(tk.END)
                         elif cmd == self.cmd_audio:
                             # d = speex.Decoder()
                             # d.initialize(speex.SPEEX_MODEID_WB)
@@ -216,7 +216,7 @@ class EncryptedChat(tk.Frame):
     
     def keypress(self, event):
         if event.keysym == 'Escape':
-            self.root.destroy()
+            self.parent.destroy()
         # x = event.char
         if event.keysym == 'Control_L':
             # print("Sending Data...")
@@ -224,19 +224,20 @@ class EncryptedChat(tk.Frame):
             # print("Data Sent!")
     
     def send_id(self, foo):
-        user = self.username.get()
+        user = self.frame_one.username.get()
         if user == '':
             user = 'User'
         # Get the message from the entry box
         self.client(chr(self.cmd_msg),
                     self.encrypt_my_message('{user}: {msg}'.format(
-                        user=user, msg=str(self.textboxsend.get()))))
+                        user=user, msg=str(self.frame_three.textboxsend.get()))))
         # Insert the message
-        self.listb1.insert(tk.END, '{user}: {msg}\n'.format(
-            user=user, msg=self.textboxsend.get()))
-        self.listb1.yview(tk.END)
+
+        self.frame_two.listb1.insert(tk.END, '{user}: {msg}\n'.format(
+            user=user, msg=self.frame_three.textboxsend.get()))
+        self.frame_two.listb1.yview(tk.END)
         # Delete entry text after sending
-        self.textboxsend.delete(0, tk.END)
+        self.frame_three.textboxsend.delete(0, tk.END)
 
 
 if __name__ == '__main__':

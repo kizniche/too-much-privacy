@@ -3,19 +3,10 @@
 
 from __future__ import print_function
 
-import fcntl
 import getpass
 import gnupg
-import hashlib
-import logging
 import os
-import random
-import re
-import string
 import sys
-import termios
-import threading
-import tty
 
 from gnupg import _logger
 from pprint import pprint
