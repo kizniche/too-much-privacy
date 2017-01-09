@@ -271,7 +271,7 @@ if __name__ == '__main__':
             """Changes nickname"""
             s.send("/nick {nick}".format(nick=args[0]))
             c.output("Changed nick to {nick}".format(nick=args[0]), "blue")
-            Command.change_nick(args[0])
+            Command.change_nick(self, args[0])
 
         def do_raise(self, *args):
             """raises"""

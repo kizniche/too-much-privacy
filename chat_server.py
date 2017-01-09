@@ -43,7 +43,8 @@ def chat_server():
                 print_and_broadcast(
                     server_socket,
                     sockfd,
-                    "[{:s}:{:d}] entered the room\n".format(*addr))
+                    "[{:s}:{:d}] entered the room".format(*addr))
+                time.sleep(1)
 
             # a message from a client, not a new connection
             else:
@@ -72,7 +73,7 @@ def chat_server():
                                         addr=addr[0],
                                         port=addr[1],
                                         prev_nick=user_list[addr[1]],
-                                        nick=data.split(' ')[1]))
+                                        nick=data.split(' ')[1]).strip('\n'))
                             user_list[addr[1]] = data.split(' ')[1]
                         else:
                             broadcast(server_socket, sock,
