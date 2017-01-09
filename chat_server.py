@@ -40,12 +40,10 @@ def chat_server():
                 sockfd, addr = server_socket.accept()
                 SOCKET_LIST.append(sockfd)
                 user_list[addr[1]] = ''
-                print("[{time}] Client {:s} {:d} connected".format(
-                    time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    *addr))
-                broadcast(server_socket,
-                          sockfd,
-                          "[{:s}:{:d}] entered the room\n".format(*addr))
+                print_and_broadcast(
+                    server_socket,
+                    sockfd,
+                    "[{:s}:{:d}] entered the room\n".format(*addr))
 
             # a message from a client, not a new connection
             else:
@@ -57,17 +55,24 @@ def chat_server():
                         # there is something in the socket
                         # print('Message="{}"'.format(data_split))
                         if data.lower().startswith('/nick'):
-                            print("[{time}] {:s} {:d} ({prev_nick}) changed nick to {nick}".format(
-                                time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                *addr,
-                                prev_nick=user_list[addr[1]],
-                                nick=data.split(' ')[1]))
-                            broadcast(server_socket, sock,
-                                      "[{time}] {:s} {:d} ({prev_nick}) changed nick to {nick}".format(
-                                          time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                          *addr,
-                                          prev_nick=user_list[addr[1]],
-                                          nick=data.split(' ')[1]))
+                            nick = data.split(' ')[1]
+                            if user_list[addr[1]] == '':
+                                print_and_broadcast(
+                                    server_socket,
+                                    sock,
+                                    "{addr}:{port} set nick to {nick}".format(
+                                        addr=addr[0],
+                                        port=addr[1],
+                                        nick=nick))
+                            else:
+                                print_and_broadcast(
+                                    server_socket,
+                                    sock,
+                                    "({addr}:{port}) {prev_nick} changed nick to {nick}".format(
+                                        addr=addr[0],
+                                        port=addr[1],
+                                        prev_nick=user_list[addr[1]],
+                                        nick=data.split(' ')[1]))
                             user_list[addr[1]] = data.split(' ')[1]
                         else:
                             broadcast(server_socket, sock,
@@ -80,26 +85,29 @@ def chat_server():
 
                         # at this stage, no data means probably the
                         # connection has been broken
-                        print("[{time}] {nick} ({:s}:{:d}) disconnected".format(
-                            nick=user_list[addr[1]],
-                            time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            *addr))
-                        broadcast(server_socket, sock,
-                                  '{nick} ({:s}:{:d}) disconnected\n'.format(
-                                      nick=user_list[addr[1]],
-                                      *addr))
+                        print_and_broadcast(
+                            server_socket,
+                            sock,
+                            '{nick} ({:s}:{:d}) disconnected\n'.format(
+                                nick=user_list[addr[1]],
+                                *addr))
                 except:
-                    print("[{time}] {nick} ({:s}:{:d}) disconnected".format(
-                        nick=user_list[addr[1]],
-                        time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        *addr))
-                    broadcast(server_socket, sock,
-                              '{nick} ({:s}:{:d}) disconnected\n'.format(
-                                  nick=user_list[addr[1]],
-                                  *addr))
+                    print_and_broadcast(
+                        server_socket,
+                        sock,
+                        '{nick} ({:s}:{:d}) disconnected\n'.format(
+                            nick=user_list[addr[1]],
+                            *addr))
                     continue
 
     server_socket.close()
+
+
+def print_and_broadcast(server_socket, sock, message):
+    print("[{time}] {message}".format(
+        time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        message=message))
+    broadcast(server_socket, sock, message)
 
 
 # broadcast chat messages to all connected clients
