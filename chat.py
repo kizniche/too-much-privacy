@@ -339,7 +339,7 @@ if __name__ == '__main__':
                             else:
                                 c.output('[{time}] (test) {data}'.format(
                                     time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                    data=total_data_joined.split(' ', 1)[1].strip('\n')))
+                                    data=each_data.split(' ', 1)[1].strip('\n')))
 
     t = Thread(target=run)
     t.daemon = True
