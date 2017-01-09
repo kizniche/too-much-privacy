@@ -12,6 +12,7 @@
 # Import private key: gpg2 --import private.asc
 
 import datetime
+import json
 import select
 import socket
 import sys
@@ -56,15 +57,11 @@ class Command(object):
         elif str(cmd)[:1] == '/':
             raise UnknownCommand(cmd[1:])
         else:
-            self.soc.send('[{nick}] {line}'.format(nick=self.nick,
-                                                   line=tmp.encrypt_string(line)))
+            self.soc.send(json.dumps({"nick": self.nick, "data": tmp.encrypt_string(line)}))
             return '[{time}] [{nick}] (*) {line}'.format(
                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 nick=self.nick,
                 line=line)
-
-    def change_nick(self, new_nick):
-        self.nick = new_nick
 
     def help(self, cmd=None):
         def std_help():
@@ -318,20 +315,25 @@ if __name__ == '__main__':
                         sys.exit()
                     else:
                         # print data
-                        data_split = total_data_joined.split("-----END PGP MESSAGE-----")
+                        # data_split = total_data_joined.split("-----END PGP MESSAGE-----")
                         # print('Message="{}"'.format(data_split))
-                        # c.output('message="{msg}"'.format(msg=data_split))
-                        for each_data in data_split:
-                            if '-----BEGIN PGP MESSAGE-----' in each_data:
-                                c.output('[{time}] {nick} (*) {data}'.format(
-                                    time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                    nick=each_data.split(' ', 1)[0].strip('\n'),
-                                    data=tmp.decrypt_string('{data}-----END PGP MESSAGE-----'.format(
-                                        data=each_data.split(' ', 1)[1]))), 'green')
-                            elif each_data != '\n':
-                                c.output('[{time}] (Server) {data}'.format(
-                                    time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                    data=each_data))
+                        # c.output('message="{msg}"'.format(msg=total_data_joined))
+                        rec_nick = None
+                        rec_data = None
+                        for each_data_key, each_data_value in json.loads(total_data_joined).iteritems():
+                            if each_data_key == 'nick':
+                                rec_nick = each_data_value
+                            elif each_data_key == 'data':
+                                rec_data = each_data_value
+                        if '-----BEGIN PGP MESSAGE-----' in rec_data:
+                            c.output('[{time}] {nick} (*) {data}'.format(
+                                time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                nick=rec_nick,
+                                data=tmp.decrypt_string(rec_data)), 'green')
+                        elif rec_data != '\n':
+                            c.output('[{time}] (Server) {data}'.format(
+                                time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                data=rec_data))
 
     t = Thread(target=run)
     t.daemon = True

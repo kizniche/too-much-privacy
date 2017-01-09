@@ -2,6 +2,7 @@
 #  chat_server.py
 
 import datetime
+import json
 import select
 import socket
 import sys
@@ -26,8 +27,6 @@ def chat_server():
         time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         port=str(PORT)))
 
-    user_list = {}
-
     while 1:
         time.sleep(1)
         # get the list sockets which are ready to be read through select
@@ -39,11 +38,11 @@ def chat_server():
             if sock == server_socket:
                 sockfd, addr = server_socket.accept()
                 SOCKET_LIST.append(sockfd)
-                user_list['{ip}:{port}'.format(ip=addr[0], port=addr[1])] = ''
                 print_and_broadcast(
                     server_socket,
                     sockfd,
-                    "{:s}:{:d} Connected".format(*addr))
+                    '{:s}:{:d}'.format(*addr),
+                    'Connected')
                 time.sleep(1)
 
             # a message from a client, not a new connection
@@ -55,8 +54,7 @@ def chat_server():
                     if data:
                         # there is something in the socket
                         # print('Message="{}"'.format(data_split))
-                        broadcast(server_socket, sock,
-                                  '{data}'.format(data=data))
+                        broadcast(server_socket, sock, data)
 
                     else:
                         # remove the socket that's broken
@@ -68,26 +66,25 @@ def chat_server():
                         print_and_broadcast(
                             server_socket,
                             sock,
-                            '{nick} ({:s}:{:d}) disconnected'.format(
-                                nick=user_list['{ip}:{port}'.format(ip=addr[0], port=addr[1])],
-                                *addr))
+                            '{:s}:{:d}'.format(*addr),
+                            'Disconnected')
                 except:
                     print_and_broadcast(
                         server_socket,
                         sock,
-                        '{nick} ({:s}:{:d}) disconnected'.format(
-                            nick=user_list['{ip}:{port}'.format(ip=addr[0], port=addr[1])],
-                            *addr))
+                        '{:s}:{:d}'.format(*addr),
+                        'Disconnected')
                     continue
 
     server_socket.close()
 
 
-def print_and_broadcast(server_socket, sock, message):
-    print("[{time}] {message}".format(
+def print_and_broadcast(server_socket, sock, nick, message):
+    print("[{time}] {nick} {message}".format(
         time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        nick=nick,
         message=message))
-    broadcast(server_socket, sock, message)
+    broadcast(server_socket, sock, json.dumps({"nick": nick, "data": message}))
 
 
 # broadcast chat messages to all connected clients
