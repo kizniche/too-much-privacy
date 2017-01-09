@@ -80,7 +80,7 @@ def chat_server():
 
 
 def print_and_broadcast(server_socket, sock, nick, message):
-    print("[{time}] {nick} {message}".format(
+    print("[{time}] {nick}: {message}".format(
         time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         nick=nick,
         message=message))

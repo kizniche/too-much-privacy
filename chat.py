@@ -13,6 +13,7 @@
 
 import datetime
 import json
+import re
 import select
 import socket
 import sys
@@ -58,7 +59,7 @@ class Command(object):
             raise UnknownCommand(cmd[1:])
         else:
             self.soc.send(json.dumps({"nick": self.nick, "data": tmp.encrypt_string(line)}))
-            return '[{time}] [{nick}] (*) {line}'.format(
+            return '[{time}] {nick}: (*) {line}'.format(
                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 nick=self.nick,
                 line=line)
@@ -268,6 +269,8 @@ if __name__ == '__main__':
         c.output('Unable to connect: {err}'.format(err=except_msg))
         sys.exit()
 
+    s.send(json.dumps({'nick': nickname, 'data': 'Connected'}))
+
     def run():
         c.output("Welcome. Type '/help' for a list of commands", 'error')
         while True:
@@ -314,28 +317,30 @@ if __name__ == '__main__':
                         c.output('Disconnected from chat server')
                         sys.exit()
                     else:
-                        # print data
-                        # data_split = total_data_joined.split("-----END PGP MESSAGE-----")
-                        # print('Message="{}"'.format(data_split))
-                        c.output('message1="{msg}"'.format(msg=total_data_joined))
-                        c.output('message2="{msg}"'.format(msg=json.loads(total_data_joined)))
-                        rec_nick = None
-                        rec_data = None
-                        for each_data_key, each_data_value in json.loads(total_data_joined).iteritems():
-                            if each_data_key == 'nick':
-                                rec_nick = each_data_value
-                            elif each_data_key == 'data':
-                                rec_data = each_data_value
-                        if '-----BEGIN PGP MESSAGE-----' in rec_data:
-                            c.output('[{time}] [{nick}] (*) {data}'.format(
-                                time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                nick=rec_nick,
-                                data=tmp.decrypt_string(rec_data)), 'green')
-                        else:
-                            c.output('[{time}] [{nick}] (Server) {data}'.format(
-                                time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                nick=rec_nick,
-                                data=rec_data))
+                        data_split = re.split('({[^}]*})', total_data_joined)[1::2]
+                        for each_data in data_split:
+                            broadcast(each_data)
+
+
+    def broadcast(data):
+        rec_nick = None
+        rec_data = None
+        for each_data_key, each_data_value in json.loads(data).iteritems():
+            if each_data_key == 'nick':
+                rec_nick = each_data_value
+            elif each_data_key == 'data':
+                rec_data = each_data_value
+        if '-----BEGIN PGP MESSAGE-----' in rec_data:
+            c.output('[{time}] {nick}: (*) {data}'.format(
+                time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                nick=rec_nick,
+                data=tmp.decrypt_string(rec_data)), 'green')
+        else:
+            c.output('[{time}] {nick}: {data}'.format(
+                time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                nick=rec_nick,
+                data=rec_data), 'blue')
+
 
     t = Thread(target=run)
     t.daemon = True
