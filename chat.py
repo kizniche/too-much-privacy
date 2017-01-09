@@ -53,9 +53,9 @@ class Command(object):
             return Commander.Exit
         elif cmd in self._help_cmd:
             return self.help(args[0] if args else None)
-        elif str(cmd)[:1] == '/' and hasattr(self, 'do_' + cmd[1:]):
+        elif line[:1] == '/' and hasattr(self, 'do_' + cmd[1:]):
             return getattr(self, 'do_' + cmd[1:])(*args)
-        elif str(cmd)[:1] == '/':
+        elif line[:1] == '/':
             raise UnknownCommand(cmd[1:])
         else:
             self.soc.send(json.dumps({"nick": self.nick, "data": tmp.encrypt_string(line)}))
@@ -122,7 +122,7 @@ class Input(FocusMixin, urwid.Edit):
 
     def keypress(self, size, key):
         if key == 'enter':
-            line = self.edit_text.strip()
+            line = self.edit_text
             if line:
                 urwid.emit_signal(self, 'line_entered', line)
                 self.history.append(line)
