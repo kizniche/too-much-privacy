@@ -292,7 +292,7 @@ if __name__ == '__main__':
             for sock in read_sockets:
                 if sock == s:
                     # incoming message from remote server, s
-                    timeout = 0.2
+                    timeout = 0.01
                     total_data = []
                     data = ''
                     # beginning time
@@ -329,11 +329,12 @@ if __name__ == '__main__':
                         # print data
                         data_split = total_data_joined.split("-----END PGP MESSAGE-----")
                         # print('Message="{}"'.format(data_split))
+                        # c.output('message="{msg}"'.format(msg=data_split))
                         for each_data in data_split:
                             if '-----BEGIN PGP MESSAGE-----' in each_data:
                                 c.output('[{time}] {nick} (*) {data}'.format(
                                     time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                    nick=data_split.split(' ', 1)[0],
+                                    nick=each_data.split(' ', 1)[0],
                                     data='{data}-----END PGP MESSAGE-----'.format(data=tmp.decrypt_string(each_data.split(' ', 1)[1]))), 'green')
                             else:
                                 c.output('[{time}] (test) {data}'.format(
