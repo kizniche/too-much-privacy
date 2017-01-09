@@ -15,6 +15,7 @@ import datetime
 import select
 import socket
 import sys
+import time
 import urwid
 from collections import deque
 from threading import Thread
@@ -61,6 +62,9 @@ class Command(object):
                 time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 nick=self.nick,
                 line=line)
+
+    def change_nick(self, new_nick):
+        self.nick = new_nick
 
     def help(self, cmd=None):
         def std_help():
@@ -263,6 +267,12 @@ if __name__ == '__main__':
             """echos arguments"""
             return ' '.join(args)
 
+        def do_nick(self, *args):
+            """Changes nickname"""
+            s.send("/nick {nick}".format(nick=args[0]))
+            c.output("Changed nick to {nick}".format(nick=args[0]), "blue")
+            Command.change_nick(args[0])
+
         def do_raise(self, *args):
             """raises"""
             raise Exception('Some Error')
@@ -270,15 +280,13 @@ if __name__ == '__main__':
     c = Commander('Too Much Privacy : {nick} (*=Encrypted)'.format(nick=nickname),
                   cmd_cb=TestCmd())
 
-    # connect to remote host
     try:
         s.connect((host, port))
     except Exception as except_msg:
         c.output('Unable to connect: {err}'.format(err=except_msg))
         sys.exit()
 
-    # Test async output -  e.g. coming from different thread
-    import time
+    s.send("/nick {nick}".format(nick=nickname))
 
     def run():
         c.output("Welcome. Type '/help' for a list of commands", 'error')
@@ -335,9 +343,10 @@ if __name__ == '__main__':
                                 c.output('[{time}] {nick} (*) {data}'.format(
                                     time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                     nick=each_data.split(' ', 1)[0].strip('\n'),
-                                    data=tmp.decrypt_string('{data}-----END PGP MESSAGE-----'.format(data=each_data.split(' ', 1)[1]))).strip('\n'), 'green')
+                                    data=tmp.decrypt_string('{data}-----END PGP MESSAGE-----'.format(
+                                        data=each_data.split(' ', 1)[1]))), 'green')
                             elif each_data != '\n':
-                                c.output('[{time}] (test) {data}'.format(
+                                c.output('[{time}] (Server) {data}'.format(
                                     time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                     data=each_data))
 

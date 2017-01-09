@@ -26,6 +26,8 @@ def chat_server():
         time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         port=str(PORT)))
 
+    user_list = {}
+
     while 1:
         time.sleep(1)
         # get the list sockets which are ready to be read through select
@@ -37,6 +39,7 @@ def chat_server():
             if sock == server_socket:
                 sockfd, addr = server_socket.accept()
                 SOCKET_LIST.append(sockfd)
+                user_list[addr[1]] = ''
                 print("[{time}] Client {:s} {:d} connected".format(
                     time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     *addr))
@@ -53,8 +56,22 @@ def chat_server():
                     if data:
                         # there is something in the socket
                         # print('Message="{}"'.format(data_split))
-                        broadcast(server_socket, sock,
-                                  '{data}'.format(data=data))
+                        if data.lower().startswith('/nick'):
+                            print("[{time}] {:s} {:d} ({prev_nick}) changed nick to {nick}".format(
+                                time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                *addr,
+                                prev_nick=user_list[addr[1]],
+                                nick=data.split(' ')[1]))
+                            broadcast(server_socket, sock,
+                                      "[{time}] {:s} {:d} ({prev_nick}) changed nick to {nick}".format(
+                                          time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                          *addr,
+                                          prev_nick=user_list[addr[1]],
+                                          nick=data.split(' ')[1]))
+                            user_list[addr[1]] = data.split(' ')[1]
+                        else:
+                            broadcast(server_socket, sock,
+                                      '{data}'.format(data=data))
 
                     else:
                         # remove the socket that's broken
@@ -63,17 +80,23 @@ def chat_server():
 
                         # at this stage, no data means probably the
                         # connection has been broken
-                        print("[{time}] Client {:s} {:d} disconnected".format(
+                        print("[{time}] {nick} ({:s}:{:d}) disconnected".format(
+                            nick=user_list[addr[1]],
                             time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             *addr))
                         broadcast(server_socket, sock,
-                                  'Client {:s} {:d} disconnected\n'.format(*addr))
+                                  '{nick} ({:s}:{:d}) disconnected\n'.format(
+                                      nick=user_list[addr[1]],
+                                      *addr))
                 except:
-                    print("[{time}] Client {:s} {:d} disconnected".format(
+                    print("[{time}] {nick} ({:s}:{:d}) disconnected".format(
+                        nick=user_list[addr[1]],
                         time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         *addr))
                     broadcast(server_socket, sock,
-                              'Client {:s} {:d} disconnected\n'.format(*addr))
+                              '{nick} ({:s}:{:d}) disconnected\n'.format(
+                                  nick=user_list[addr[1]],
+                                  *addr))
                     continue
 
     server_socket.close()
