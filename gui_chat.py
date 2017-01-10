@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+# Requirements
+# sudo apt-get install portaudio19-dev python-dev python-tk
+# sudo pip install pyaudio pycrypto
+
 import pyaudio
 import socket
 import select
@@ -20,7 +24,6 @@ class FrameOne(tk.Frame):
         self.entryhost = tk.Entry(self)
         self.entryhost.pack(side=tk.LEFT, fill=tk.X, expand=True)
         self.entryhost.insert(0, "127.0.0.1")
-        self.client_host = str(self.entryhost.get())
         self.label = tk.Label(self, text="Username")
         self.label.pack(side=tk.LEFT)
         self.username = tk.Entry(self)
@@ -185,7 +188,8 @@ class EncryptedChat(tk.Frame):
         encrypted_audio = aes.encrypt(pad_text)
         return encrypted_audio
 
-    def connect_to_server(self,):
+    def connect_to_server(self):
+        self.client_host = str(self.frame_one.entryhost.get())
         try:
             self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.s.connect((self.client_host, self.client_port))
