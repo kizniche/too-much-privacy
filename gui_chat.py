@@ -72,6 +72,7 @@ class EncryptedChat(tk.Frame):
         self.pgp_name = pgp_name
         self.pgp_name = 'User'
 
+        # Draw GUI
         self.parent.option_readfile("gui_options.db")
         self.parent.title("Too Much Privacy")
         self.parent.wm_resizable(0, 0)
@@ -87,15 +88,7 @@ class EncryptedChat(tk.Frame):
         self.frame_three = FrameThree(self)
         self.frame_three.pack(fill=tk.X)
 
-        # self.main = Main(self)
-        # self.main.pack(side="right", fill="both", expand=True)
-        # self.statusbar = Statusbar(self, ...)
-        # self.toolbar = Toolbar(self, ...)
-        # self.navbar = Navbar(self, ...)
-        # self.statusbar.pack(side="bottom", fill="x")
-        # self.toolbar.pack(side="top", fill="x")
-        # self.navbar.pack(side="left", fill="y")
-
+        # Variables
         self.cmd_msg, self.cmd_audio = range(2)
         self.chunk = 512
         self.format = pyaudio.paInt16
@@ -103,33 +96,25 @@ class EncryptedChat(tk.Frame):
         self.rate = 1100
         self.key_their = "ABCDEFGHIJKLMNOP"
         self.key_mine = "ABCDEFGHIJKLMNOP"
-        self.server_host = ''
+        self.server_host = '127.0.0.1'
         self.client_host = ''
         self.server_port = 9009
         self.client_port = 9009
-        self.s = None
+        self.s_server = None
+        self.s_client = None
         self.listb1 = None
 
-        # Start Threading
+        # Start server thread
         self.server_thread = Thread(target=self.server)
         self.server_thread.daemon = True
         self.server_thread.start()
 
-    def run(self):
-        pass
-
-    def decrypt_my_message(self, encrypted_msg):
-        iv = "1234567812345678"
-        key = self.key_their
-        if len(key) not in (16, 24, 32):
-            raise ValueError("Key must be 16, 24, or 32 bytes")
-        if (len(encrypted_msg) % 16) != 0:
-            raise ValueError("Message must be a multiple of 16 bytes")
-        if len(iv) != 16:
-            raise ValueError("IV must be 16 bytes")
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        plaintext = cipher.decrypt(encrypted_msg)
-        return plaintext
+    def client(self, cmd, msg):
+        try:
+            self.s_client.send(cmd + msg)
+        except Exception as except_msg:
+            self.frame_one.connectButton.config(text="Connect")
+            print("You are not connected: {err}".format(err=except_msg))
 
     def server(self):
         """Server"""
@@ -138,21 +123,35 @@ class EncryptedChat(tk.Frame):
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server_socket.bind((self.server_host, self.server_port))
         server_socket.listen(5)
+        self.frame_two.listb1.insert(
+            tk.END,
+            "Server Started at {ip}:{port}\n".format(ip=self.server_host,
+                                                   port=self.server_port))
+        print("Server Started at {ip}:{port}".format(ip=self.server_host,
+                                                     port=self.server_port))
+
         # Start receive loop
         read_list = [server_socket]
         while True:
             readable, writable, errored = select.select(read_list, [], [])
-            for self.s in readable:
-                if self.s is server_socket:
-                    conn, addr = self.s.accept()
+            for self.s_server in readable:
+                if self.s_server is server_socket:
+                    conn, addr = self.s_server.accept()
                     read_list.append(conn)
+                    self.frame_two.listb1.insert(
+                        tk.END,
+                        "Connection from {:s}:{:d}\n".format(*addr))
                     print("Connection from {addr}".format(addr=addr))
                 else:
                     recv_msg = conn.recv(2024)
                     if recv_msg:
                         cmd, recv_msg = ord(recv_msg[0]), recv_msg[1:]
                         if cmd == self.cmd_msg:
-                            self.frame_two.listb1.insert(tk.END, self.decrypt_my_message(recv_msg.strip()) + "\n")
+                            recv_pgp_msg = '{pgp_msg}\n'.format(pgp_msg=self.decrypt_my_message(recv_msg.strip()))
+                            decrypted_pgp_msg = self.tmp.decrypt_string(recv_pgp_msg)
+                            self.frame_two.listb1.insert(
+                                tk.END,
+                                '[RECV] {msg}'.format(msg=decrypted_pgp_msg))
                             self.frame_two.listb1.yview(tk.END)
                         elif cmd == self.cmd_audio:
                             # d = speex.Decoder()
@@ -167,22 +166,35 @@ class EncryptedChat(tk.Frame):
                             # Write the data back out to the speakers
                             stream.write(self.decrypt_my_message(recv_msg), self.chunk)
                     else:
-                        self.s.close()
-                        read_list.remove(self.s)
+                        self.frame_two.listb1.insert(
+                            tk.END,
+                            "Server Disconnected\n")
+                        self.s_server.close()
+                        read_list.remove(self.s_server)
+
+    def decrypt_my_message(self, encrypted_msg):
+        iv = "1234567812345678"
+        if len(self.key_their) not in (16, 24, 32):
+            raise ValueError("Key must be 16, 24, or 32 bytes")
+        if (len(encrypted_msg) % 16) != 0:
+            raise ValueError("Message must be a multiple of 16 bytes")
+        if len(iv) != 16:
+            raise ValueError("IV must be 16 bytes")
+        cipher = AES.new(self.key_their, AES.MODE_CBC, iv)
+        plaintext = cipher.decrypt(encrypted_msg)
+        return plaintext
 
     def encrypt_my_message(self, unencrypted_msg):
-        key = self.key_mine
         iv = '1234567812345678'
-        aes = AES.new(key, AES.MODE_CBC, iv)
+        aes = AES.new(self.key_mine, AES.MODE_CBC, iv)
         if len(unencrypted_msg) % 16 != 0:
             unencrypted_msg += ' ' * (16 - len(unencrypted_msg) % 16)
         encrypted_msg = aes.encrypt(unencrypted_msg)
         return encrypted_msg
 
     def encrypt_my_audio_message(self, unencrypted_audio):
-        key = self.key_mine
         iv = '1234567812345678'
-        aes = AES.new(key, AES.MODE_CBC, iv)
+        aes = AES.new(self.key_mine, AES.MODE_CBC, iv)
         encoder = PKCS7Encoder()
         pad_text = encoder.encode(unencrypted_audio)
         encrypted_audio = aes.encrypt(pad_text)
@@ -191,17 +203,18 @@ class EncryptedChat(tk.Frame):
     def connect_to_server(self):
         self.client_host = str(self.frame_one.entryhost.get())
         try:
-            self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.s.connect((self.client_host, self.client_port))
-            print("Connected\n")
+            self.s_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.s_client.connect((self.client_host, self.client_port))
+            self.frame_one.connectButton.config(text="Disconnect")
+            self.frame_two.listb1.insert(
+                tk.END,
+                "Connected to {ip}:{port}\n".format(ip=self.client_host,
+                                                    port=self.client_port))
+            print("Connected to {ip}:{port}\n".format(ip=self.client_host,
+                                                      port=self.client_port))
         except Exception as except_msg:
-            print("Could not connect: {err}".format(err=except_msg))
-
-    def client(self, cmd, msg):
-        try:
-            self.s.send(cmd + msg)
-        except Exception as except_msg:
-            print("You are not connected: {err}".format(err=except_msg))
+            print("Could not connect to {ip}:{port}: {err}".format(
+                ip=self.client_host, port=self.client_port, err=except_msg))
 
     def send_audio(self):
         p = pyaudio.PyAudio()
@@ -231,25 +244,36 @@ class EncryptedChat(tk.Frame):
         user = self.frame_one.username.get()
         if user == '':
             user = 'User'
-        # Get the message from the entry box
-        self.client(chr(self.cmd_msg),
-                    self.encrypt_my_message('{user}: {msg}'.format(
-                        user=user, msg=str(self.frame_three.textboxsend.get()))))
-        # Insert the message
 
-        self.frame_two.listb1.insert(tk.END, '{user}: {msg}\n'.format(
+        # Get the message from the entry box
+        message = '[SEND] {user}: {msg}'.format(
+            user=user, msg=str(self.frame_three.textboxsend.get()))
+
+        # Double Encrypt It!
+        pgp_message = self.tmp.encrypt_string(message)
+        encrypted_pgp_message = self.encrypt_my_message(pgp_message)
+
+        # Send encrypted PGP message
+        if self.client(chr(self.cmd_msg), encrypted_pgp_message):
+            print("Message sent\n")
+        else:
+            self.frame_two.listb1.insert(tk.END, "Message was not sent\n")
+
+        # Debug messages
+        print("PGP Message:\n{pgp_msg}\n".format(pgp_msg=pgp_message))
+
+        # Insert the message into the client chat window
+        self.frame_two.listb1.insert(tk.END, '[SEND] {user}: {msg}\n'.format(
             user=user, msg=self.frame_three.textboxsend.get()))
         self.frame_two.listb1.yview(tk.END)
+
         # Delete entry text after sending
         self.frame_three.textboxsend.delete(0, tk.END)
 
 
 if __name__ == '__main__':
-    # tmp = TooMuchPrivacy()
-    # pgp_name = tmp.select_keys_and_passphrase()
-
-    tmp = None
-    pgp_name = None
+    tmp = TooMuchPrivacy()
+    pgp_name = tmp.select_keys_and_passphrase()
 
     try:
         root = tk.Tk()
