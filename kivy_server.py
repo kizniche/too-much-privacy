@@ -51,7 +51,7 @@ class ChatProtocol(basic.LineReceiver):
             print("{user} joined".format(user=self.login))
             self.factory.clients[self.login] = self
             for login, protocol in self.factory.clients.items():
-                self.transport.write("{user} joined#####END#####".format(user=self.login))
+                protocol.sendLine("{user} joined#####END#####".format(user=self.login))
         elif data == 'exit':
             self.transport.write('Bye!')
             self.transport.loseConnection()
