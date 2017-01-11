@@ -1,0 +1,57 @@
+<Menu>:
+    text: 'Contacts'
+    values: ('Contacts', 'Chats', 'Settings', 'Quit')
+
+
+<RootBox>:
+    font_name: 'courier.ttf'
+    size_hint: (1, 1)
+    orientation: 'vertical'
+
+    # --- header line
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint: (1, None)
+        height: 44
+        canvas.before:
+            Color:
+                rgb: 0.4, 0.7, 1.0
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        BoxLayout:
+            id: menu_container
+            size_hint: (0.25, 1)
+            height: 44
+
+        Label:
+            font_name: 'courier.ttf'
+            text: '[b][color=000000]Too Much Privacy[/color][/b]'
+            size_hint: (0.5, 1)
+            height: 44
+            markup: True
+
+    # --- screen content
+    ScreenManager:
+        id: screen_manager
+
+        Screen:
+            name: 'Contacts'
+
+            BoxLayout:
+                id: friend_box_container
+                size_hint: (1, 1)
+
+                Label:
+                    font_name: 'courier.ttf'
+                    id: connection_label
+                    size_hint: (1, 1)
+                    text: u'Connecting...'
+
+        Screen:
+            name: 'Chats'
+
+            BoxLayout:
+                id: chat_box_container
+                size_hint: (1, 1)

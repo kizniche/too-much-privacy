@@ -1,0 +1,54 @@
+#:import NoTransition kivy.uix.screenmanager.NoTransition
+
+<Tab>:
+    orientation: 'horizontal'
+    size_hint: (None, None)
+    height: 40
+    width: 150
+    spacing: 5
+    canvas.before:
+        Color:
+            rgb: 0.6, 0.6, 0.6
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    TabLabel:
+        id: tab_label
+        size_hint: (None, None)
+        height: 40
+        width: 110
+        text_size: 110, 40
+        halign: 'right'
+        valign: 'middle'
+
+    Button:
+        id: tab_close
+        text: 'x'
+        size_hint: (None, None)
+        height: 40
+        width: 40
+
+
+<TabBox>:
+    orientation: 'vertical'
+    size_hint: (1, 1)
+
+    BoxLayout:
+        id: tab_header
+        orientation: 'horizontal'
+        size_hint: (1, None)
+        height: 40
+        spacing: 5
+
+        ScrollView:
+            id: tab_scroller
+            size_hint: (1, None)
+            height: 40
+
+    ScreenManager:
+        id: tab_content
+        transition: NoTransition()
+
+        Screen:
+            name: '__empty__'
