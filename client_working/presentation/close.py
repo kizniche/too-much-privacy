@@ -1,4 +1,4 @@
-class KivyChatApp(App):
+class TMPChatApp(App):
     def build(self):
         self.root_box = RootBox()
         Window.bind(on_close=self.pushed_close)

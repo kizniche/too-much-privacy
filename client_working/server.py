@@ -27,21 +27,22 @@ class ChatProtocol(basic.LineReceiver):
         # self.transport.write('Register your login > ')
 
     def connectionLost(self, reason):
-        print("{user} Disconnected".format(user=self.login))
+        print("[{time}] {user} Disconnected".format(time=timestamp(),
+                                                    user=self.login))
         self.factory.clients.pop(self.login)
         for login, protocol in self.factory.clients.items():
             protocol.sendLine(
-                "[color=f1c40f]{user} quit[/color]#####END#####".format(
-                    user=self.login))
+                "[color=f1c40f]{user} quit[/color]{stop}".format(
+                    user=self.login, stop=self.stop_str))
 
     def dataReceived(self, data):
-        print('[{time}] Raw_DATA="{data}"'.format(
-            time=timestamp(), data=data))
+        # print('[{time}] Raw_DATA="{data}"'.format(
+        #     time=timestamp(), data=data))
         self.combine_data(data)
 
     def lineReceived(self, line):
-        print('[{time}] Raw_LINE="{line}"'.format(
-            time=timestamp(), line=line))
+        # print('[{time}] Raw_LINE="{line}"'.format(
+        #     time=timestamp(), line=line))
         self.combine_data(line)
 
     def combine_data(self, data):
@@ -61,23 +62,24 @@ class ChatProtocol(basic.LineReceiver):
             self.factory.clients[self.login] = self
             for login, protocol in self.factory.clients.items():
                 protocol.sendLine(
-                    "[color=f1c40f]{user} joined[/color]#####END#####".format(
-                        user=self.login))
+                    "[color=f1c40f]{user} joined[/color]{stop}".format(
+                        user=self.login, stop=self.stop_str))
         elif data == 'exit':
             self.transport.write('Bye!')
             self.transport.loseConnection()
         else:
             for login, protocol in self.factory.clients.items():
                 if self.login == login:
-                    print("Self: MSG NOT Sent to {}/{}".format(login,
-                                                               self.login))
+                    # print("Self: MSG NOT Sent to {}/{}".format(login,
+                    #                                            self.login))
                     # Communicate back to the user that sent the data
                     # protocol.sendLine("Data successfully reached server for "
                     #                   "distribution.".format(data=data))
                     pass
                 else:
-                    print("MSG Sent to {}/{}".format(login, self.login))
-                    protocol.sendLine("{data}#####END#####".format(data=data))
+                    # print("MSG Sent to {}/{}".format(login, self.login))
+                    protocol.sendLine("{data}{stop}".format(data=data,
+                                                            stop=self.stop_str))
                     # self.transport.write("{data}#####END#####".format(data=data))
 
 

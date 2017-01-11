@@ -8,6 +8,7 @@ import gnupg
 import os
 import sys
 
+from Crypto.Cipher import AES
 from gnupg import _logger
 from pprint import pprint
 
@@ -76,6 +77,8 @@ class TooMuchPrivacy:
         self.key_priv_id = None
         self.key_pub_id = None
         self.passphrase = None
+        self.key_their = "ABCDEFGHIJKLMNOP"
+        self.key_mine = "ABCDEFGHIJKLMNOP"
 
     def select_keys_and_passphrase(self):
         print("Welcome to Too Much Privacy. Let's get started with selecting what keys to use.")
@@ -238,6 +241,24 @@ class TooMuchPrivacy:
         log.info('Encrypted string:\n{e_str}'.format(e_str=str_encrypted))
 
         return str_encrypted
+
+    def decrypt_aes(self, encrypted_msg, iv='1234567812345678'):
+        if len(self.key_their) not in (16, 24, 32):
+            raise ValueError("Key must be 16, 24, or 32 bytes")
+        if (len(encrypted_msg) % 16) != 0:
+            raise ValueError("Message must be a multiple of 16 bytes")
+        if len(iv) != 16:
+            raise ValueError("IV must be 16 bytes")
+        cipher = AES.new(self.key_their, AES.MODE_CBC, iv)
+        plaintext = cipher.decrypt(encrypted_msg)
+        return plaintext
+
+    def encrypt_aes(self, unencrypted_msg, iv='1234567812345678'):
+        aes = AES.new(self.key_mine, AES.MODE_CBC, iv)
+        if len(unencrypted_msg) % 16 != 0:
+            unencrypted_msg += ' ' * (16 - len(unencrypted_msg) % 16)
+        encrypted_msg = aes.encrypt(unencrypted_msg)
+        return encrypted_msg
 
     def export_keys(self, key):
         """Export PGP keys"""

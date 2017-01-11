@@ -113,11 +113,12 @@ class RootBox(BoxLayout):
         self.menu.hide_item('Chats', select='Contacts')
         self.ids.screen_manager.current = 'Contacts'
 
+
 # ============================================================================
-# Kivy App
+# TMP App
 # ============================================================================
 
-class KivyChatApp(App):
+class TMPChatApp(App):
     def build(self):
         self.settings_cls = SettingsWithSidebar
         load_kv_files()
@@ -145,4 +146,4 @@ class KivyChatApp(App):
 
 if __name__ == '__main__':
     Clock.max_iteration = 20
-    KivyChatApp().run()
+    TMPChatApp().run()

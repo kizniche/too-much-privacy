@@ -109,14 +109,16 @@ class TMPClient():
                 user=self.username, msg=text)
         if message and self.connection:
             encrypted_msg = self.tmp.encrypt_string(message)
-            print('SENT_DATA="{msg}"'.format(msg=encrypted_msg))
+            print('PGP_DATA="{msg}"'.format(msg=encrypted_msg))
+            double_encrypted_msg = self.tmp.encrypt_aes(encrypted_msg)
             self.connection.write('{msg}#####END#####'.format(
-                msg=encrypted_msg))
+                msg=double_encrypted_msg))
 
     def print_message(self, msg):
         send_msg = msg
         if msg.startswith("-----BEGIN PGP MESSAGE-----"):
-            decrypted_msg = self.tmp.decrypt_string(msg)
+            double_encrypted_msg = self.tmp.decrypt_aes(msg)
+            decrypted_msg = self.tmp.decrypt_string(double_encrypted_msg)
             if decrypted_msg != '###Passphrase unable to decrypt data###':
                 send_msg = decrypted_msg
         self.root_box.chat_box.add_message_other(send_msg)
