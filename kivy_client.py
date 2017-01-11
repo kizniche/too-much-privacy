@@ -111,11 +111,11 @@ class TMPClientApp(App):
                                "Parameters: {param}".format(
                 time=self.timestamp(), cmd=self.command, param=self.parameters))
         else:
-            message = '{msg}'.format(msg=str(self.textbox.text))
+            message = '[{user}] {msg}'.format(user=self.username, msg=str(self.textbox.text))
             if message and self.connection:
                 encrypted_msg = self.tmp.encrypt_string(message)
                 print('SENT_DATA="{msg}"'.format(msg=encrypted_msg))
-                self.label.text += '[{time}] [{user}] {msg}\n'.format(
+                self.label.text += '[{time}] {msg}\n'.format(
                     time=timestamp(), user=self.username, msg=message)
                 self.connection.write('{msg}#####END#####'.format(msg=encrypted_msg))
         self.textbox.text = ""
