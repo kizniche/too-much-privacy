@@ -47,7 +47,8 @@ class ChatProtocol(basic.LineReceiver):
                 if self.login == login:
                     # Communicate back to the user that sent the data
                     pass
-                self.transport.write("{data}".format(data=data))
+                protocol.sendLine("{data}".format(data=data))
+                # self.transport.write("{data}".format(data=data))
 
 
 class ChatFactory(protocol.Factory):
