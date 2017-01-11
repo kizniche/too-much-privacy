@@ -1,0 +1,25 @@
+<ConfirmPopup>:
+    size_hint: 0.5, 0.5
+    auto_dismiss: False
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint: (1, 1)
+        Label:
+            id: content
+            size_hint: (1, 0.75)
+
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (1, 0.25)
+            Button:
+                id: confirm_button
+
+            Button:
+                id: cancel_button
+
+
+<TextBoxLabel>:
+    size_hint_y: None
+    text_size: self.width, None
+    height: self.texture_size[1]
+    markup: True
