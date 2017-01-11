@@ -31,9 +31,9 @@ class EchoClient(basic.LineReceiver):
     def combine_data(self, data):
         self.total_data.append(data)
         if self.stop_str in data:
-            total_data_joined = ''.join(self.total_data).split(self.stop_str)[0]
-            print('Rec_DATA="{}"'.format(total_data_joined))
-            self.factory.app.print_message(total_data_joined)
+            total_data_joined = ''.join(self.total_data).split(self.stop_str)
+            print('Rec_DATA="{}"'.format(total_data_joined[0]))
+            self.factory.app.print_message(total_data_joined[0])
             self.total_data = []
 
 
@@ -53,6 +53,7 @@ class EchoFactory(protocol.ClientFactory):
 
 
 from kivy.app import App
+from kivy.clock import Clock
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
@@ -76,9 +77,14 @@ class TMPClientApp(App):
         self.connect_to_server()
         return root
 
+    def set_focus(self, dt):
+        self.textbox.focus = True
+
     def setup_gui(self):
-        self.textbox = TextInput(size_hint_y=.1, multiline=False)
+        self.textbox = TextInput(size_hint_y=.1,
+                                 multiline=False)
         self.textbox.bind(on_text_validate=self.send_message)
+        Clock.schedule_once(self.set_focus, 0)
         self.label = Label(
             text='[{time}] Connecting to {host}:{port}\n'.format(
                 time=timestamp(), host=self.host, port=self.port),
@@ -99,36 +105,41 @@ class TMPClientApp(App):
             host=self.host, port=self.port))
         self.connection = connection
         # Login
-        self.connection.write('{user}#####END#####'.format(user=self.username))
+        self.connection.write('{user}#####END#####'.format(
+            user=self.username))
 
     def send_message(self, *args):
-        if str(self.textbox.text)[0] == '/':
+        if len(str(self.textbox.text)) > 0 and str(self.textbox.text)[0] == '/':
             options = str(self.textbox.text)[1:].split(' ')
             self.command = options[0]
             del options[0]
             self.parameters = options
             self.print_message("[{time}] Got a '/'. Command: '{cmd}', "
                                "Parameters: {param}".format(
-                time=self.timestamp(), cmd=self.command, param=self.parameters))
+                                    time=self.timestamp(),
+                                    cmd=self.command,
+                                    param=self.parameters))
         else:
-            message = '[{user}] {msg}'.format(user=self.username, msg=str(self.textbox.text))
+            message = '[{user}] {msg}'.format(user=self.username,
+                                              msg=str(self.textbox.text))
             if message and self.connection:
                 encrypted_msg = self.tmp.encrypt_string(message)
                 print('SENT_DATA="{msg}"'.format(msg=encrypted_msg))
                 self.label.text += '[{time}] {msg}\n'.format(
                     time=timestamp(), user=self.username, msg=message)
-                self.connection.write('{msg}#####END#####'.format(msg=encrypted_msg))
+                self.connection.write('{msg}#####END#####'.format(
+                    msg=encrypted_msg))
         self.textbox.text = ""
+        Clock.schedule_once(self.set_focus, 0)
 
     def print_message(self, msg):
+        send_msg = msg
         if msg.startswith("-----BEGIN PGP MESSAGE-----"):
             decrypted_msg = self.tmp.decrypt_string(msg)
             if decrypted_msg != '###Passphrase unable to decrypt data###':
-                self.label.text += '[{time}] {msg}\n'.format(
-                    time=timestamp(), msg=decrypted_msg)
-        else:
-            self.label.text += '[{time}] {msg}\n'.format(
-                time=timestamp(), msg=msg)
+                send_msg = decrypted_msg
+        self.label.text += '[{time}] {msg}\n'.format(
+            time=timestamp(), msg=send_msg)
 
 
 def timestamp():

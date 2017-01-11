@@ -27,7 +27,8 @@ class ChatProtocol(basic.LineReceiver):
         print("{user} disconnected".format(user=self.login))
         self.factory.clients.pop(self.login)
         for login, protocol in self.factory.clients.items():
-            protocol.sendLine("{user} has quit#####END#####".format(user=self.login))
+            protocol.sendLine("{user} has quit#####END#####".format(
+                user=self.login))
 
     def dataReceived(self, data):
         print('Raw_DATA="{}"'.format(data))
@@ -40,9 +41,9 @@ class ChatProtocol(basic.LineReceiver):
     def combine_data(self, data):
         self.total_data.append(data)
         if self.stop_str in data:
-            total_data_joined = ''.join(self.total_data).split(self.stop_str)[0]
-            print('Rec_DATA="{}"'.format(total_data_joined))
-            self.received_data(total_data_joined)
+            total_data_joined = ''.join(self.total_data).split(self.stop_str)
+            print('Rec_DATA="{}"'.format(total_data_joined[0]))
+            self.received_data(total_data_joined[0])
             self.total_data = []
 
     def received_data(self, data):
@@ -51,7 +52,8 @@ class ChatProtocol(basic.LineReceiver):
             print("{user} joined".format(user=self.login))
             self.factory.clients[self.login] = self
             for login, protocol in self.factory.clients.items():
-                protocol.sendLine("{user} joined#####END#####".format(user=self.login))
+                protocol.sendLine("{user} joined#####END#####".format(
+                    user=self.login))
         elif data == 'exit':
             self.transport.write('Bye!')
             self.transport.loseConnection()
@@ -60,8 +62,9 @@ class ChatProtocol(basic.LineReceiver):
                 if self.login == login:
                     # Communicate back to the user that sent the data
                     pass
-                protocol.sendLine("{data}#####END#####".format(data=data))
-                # self.transport.write("{data}".format(data=data))
+                else:
+                    protocol.sendLine("{data}#####END#####".format(data=data))
+                    # self.transport.write("{data}".format(data=data))
 
 
 class ChatFactory(protocol.Factory):
