@@ -27,7 +27,7 @@ class ChatProtocol(basic.LineReceiver):
         print("{user} disconnected".format(user=self.login))
         self.factory.clients.pop(self.login)
         for login, protocol in self.factory.clients.items():
-            protocol.sendLine("{user} has quit#####END#####".format(self.login))
+            protocol.sendLine("{user} has quit#####END#####".format(user=self.login))
 
     def dataReceived(self, data):
         print('Raw_DATA="{}"'.format(data))
