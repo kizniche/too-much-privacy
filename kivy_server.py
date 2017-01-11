@@ -28,32 +28,27 @@ class ChatProtocol(basic.LineReceiver):
             protocol.sendLine("%s has quit the chat room" % (self.login,))
 
     def dataReceived(self, data):
+        self.received_data(data)
+
+    def lineReceived(self, line):
+        self.received_data(line)
+
+    def received_data(self, data):
         if not self.login:
             self.login = data
             self.factory.clients[self.login] = self
             for login, protocol in self.factory.clients.items():
-                protocol.sendLine("%s has joined the chat room" % (self.login,))
+                self.transport.write("{user} joined".format(user=self.login))
         elif data == 'exit':
-            self.transport.write('Bye!\n')
+            self.transport.write('Bye!')
             self.transport.loseConnection()
         else:
             for login, protocol in self.factory.clients.items():
-                protocol.sendLine("<%s> %s" % (self.login, data))
+                if self.login == login:
+                    # Communicate back to the user that sent the data
+                    pass
+                self.transport.write("{data}".format(data=data))
 
-    def lineReceived(self, line):
-        if len(line) == 0:
-            return
-        if not self.login:
-            self.login = line
-            self.factory.clients[self.login] = self
-            for login, protocol in self.factory.clients.items():
-                protocol.sendLine("%s has joined the chat room" % (self.login,))
-        elif line == 'exit':
-            self.transport.write('Bye!\n')
-            self.transport.loseConnection()
-        else:
-            for login, protocol in self.factory.clients.items():
-                protocol.sendLine("<%s> %s" % (self.login, line))
 
 class ChatFactory(protocol.Factory):
     def __init__(self):

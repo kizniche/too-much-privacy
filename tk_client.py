@@ -65,6 +65,7 @@ class EncryptedChat(tk.Frame):
     """
     Encrypted Text and Audio Chat
     """
+
     def __init__(self, parent, tmp, pgp_name, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
@@ -119,14 +120,14 @@ class EncryptedChat(tk.Frame):
     def server(self):
         """Server"""
         # Initialize socket
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        server_socket.bind((self.server_host, self.server_port))
-        server_socket.listen(5)
+        self.s_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s_client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.s_client.bind((self.server_host, self.server_port))
+        self.s_client.listen(5)
         self.frame_two.listb1.insert(
             tk.END,
             "Server Started at {ip}:{port}\n".format(ip=self.server_host,
-                                                   port=self.server_port))
+                                                     port=self.server_port))
         print("Server Started at {ip}:{port}".format(ip=self.server_host,
                                                      port=self.server_port))
 
@@ -230,7 +231,7 @@ class EncryptedChat(tk.Frame):
     #    stream.stop_stream()
     #    stream.close()
     #    p.terminate()
-    
+
     def keypress(self, event):
         if event.keysym == 'Escape':
             self.parent.destroy()
@@ -239,7 +240,7 @@ class EncryptedChat(tk.Frame):
             # print("Sending Data...")
             self.client(chr(self.cmd_audio), self.send_audio())
             # print("Data Sent!")
-    
+
     def send_id(self, foo):
         user = self.frame_one.username.get()
         if user == '':

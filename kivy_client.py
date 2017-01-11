@@ -14,13 +14,14 @@ from twisted.protocols import basic
 class EchoClient(basic.LineReceiver):
     def connectionMade(self):
         self.factory.app.on_connection(self.transport)
-        self.factory.app.print_message("connection made")
+        self.factory.app.print_message("Connection made")
 
     def lineReceived(self, line):
+        print('LINE="{}"'.format(line))
         self.factory.app.print_message(line)
 
     def dataReceived(self, data):
-        print("DATA: {}".format(data))
+        print('DATA="{}"'.format(data))
         self.factory.app.print_message(data)
 
 
@@ -31,23 +32,27 @@ class EchoFactory(protocol.ClientFactory):
         self.app = app
 
     def clientConnectionLost(self, conn, reason):
-        self.app.print_message("connection lost")
+        self.app.print_message("[{time}] Connection lost".format(
+            time=timestamp()))
 
     def clientConnectionFailed(self, conn, reason):
-        self.app.print_message("connection failed")
+        self.app.print_message("[{time}] Connection failed".format(
+            time=timestamp()))
 
 
-# A simple kivy App, with a textbox to enter messages
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
 
+from too_much_privacy import TooMuchPrivacy
+
 
 class TMPClientApp(App):
     def __init__(self):
         App.__init__(self)
-        self.username = "User"
+        self.tmp = TooMuchPrivacy()
+        self.username = self.tmp.select_keys_and_passphrase()
         self.host = 'fungi.kylegabriel.com'
         self.port = 8000
         self.connection = None
@@ -64,7 +69,7 @@ class TMPClientApp(App):
         self.textbox.bind(on_text_validate=self.send_message)
         self.label = Label(
             text='[{time}] Connecting to {host}:{port}\n'.format(
-                time=self.timestamp(), host=self.host, port=self.port),
+                time=timestamp(), host=self.host, port=self.port),
             halign='left',
             valign='bottom',
             size_hint=(None, None))
@@ -96,16 +101,21 @@ class TMPClientApp(App):
         else:
             message = '{msg}'.format(msg=str(self.textbox.text))
             if message and self.connection:
-                self.connection.write('{msg}'.format(msg=message))
+                self.connection.write('{msg}'.format(msg=self.tmp.encrypt_string(message)))
         self.textbox.text = ""
 
     def print_message(self, msg):
+        msg_send = msg
+        if msg.startswith("-----BEGIN PGP MESSAGE-----"):
+            decrypted = self.tmp.decrypt_string(msg)
+            if decrypted != '':
+                msg_send = decrypted
         self.label.text += '[{time}] {msg}\n'.format(
-            time=self.timestamp(), msg=msg)
+            time=timestamp(), msg=msg_send)
 
-    @staticmethod
-    def timestamp():
-        return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def timestamp():
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 if __name__ == '__main__':
