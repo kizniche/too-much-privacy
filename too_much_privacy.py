@@ -47,7 +47,18 @@ KEY_FILE_MINE = 'keys_mine_pub_priv.asc'
 KEY_FILE_THEIR = 'keys_their_pub.asc'
 
 home = os.path.expanduser('~')
-gpg_path = os.path.join(home, '.gnupg')
+if sys.platform in ["linux", "linux2"]:
+    gpg_path = os.path.join(home, '.gnupg')
+    _keyring = None
+    _secring = None
+    _binary = None
+elif sys.platform == "win32":
+    gpg_path = '{}'.format(os.path.join(home, 'AppData/Roaming/gnupg').replace('\\', '/'))
+    _keyring = '{}{}'.format(gpg_path, '/pubring.gpg')
+    _secring = '{}{}'.format(gpg_path, '/secring.gpg')
+    current_path = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/')
+    _binary = '{}/GnuPG/pub/gpg2.exe'.format(current_path)
+    print("_binary: {}".format(_binary))
 
 
 class TooMuchPrivacy:

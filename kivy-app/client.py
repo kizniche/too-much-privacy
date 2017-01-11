@@ -8,13 +8,19 @@ install_twisted_reactor()
 
 # A simple Client that send messages to the echo server
 from twisted.internet import reactor, protocol
+from twisted.protocols import basic
 
 
-class EchoClient(protocol.Protocol):
+class EchoClient(basic.LineReceiver):
     def connectionMade(self):
         self.factory.app.on_connection(self.transport)
+        self.factory.app.print_message("connection made")
+
+    def lineReceived(self, line):
+        self.factory.app.print_message(line)
 
     def dataReceived(self, data):
+        print("DATA: {}".format(data))
         self.factory.app.print_message(data)
 
 
@@ -36,14 +42,13 @@ from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
-from kivy.graphics import Color
 
 
 class TMPClientApp(App):
     def __init__(self):
         App.__init__(self)
         self.username = "User"
-        self.host = 'localhost'
+        self.host = 'fungi.kylegabriel.com'
         self.port = 8000
         self.connection = None
         self.command = None
@@ -76,6 +81,8 @@ class TMPClientApp(App):
         self.print_message("Successfully connected to {host}:{port}".format(
             host=self.host, port=self.port))
         self.connection = connection
+        # Login
+        self.connection.write('{user}'.format(user=self.username))
 
     def send_message(self, *args):
         if str(self.textbox.text)[0] == '/':
@@ -87,8 +94,7 @@ class TMPClientApp(App):
                                "Parameters: {param}".format(
                 time=self.timestamp(), cmd=self.command, param=self.parameters))
         else:
-            message = '{user}: {msg}'.format(user=self.username,
-                                             msg=str(self.textbox.text))
+            message = '{msg}'.format(msg=str(self.textbox.text))
             if message and self.connection:
                 self.connection.write('{msg}'.format(msg=message))
         self.textbox.text = ""
