@@ -115,17 +115,20 @@ class TMPClientApp(App):
             if message and self.connection:
                 encrypted_msg = self.tmp.encrypt_string(message)
                 print('SENT_DATA="{msg}"'.format(msg=encrypted_msg))
+                self.label.text += '[{time}] [{user}] {msg}\n'.format(
+                    time=timestamp(), user=self.username, msg=message)
                 self.connection.write('{msg}#####END#####'.format(msg=encrypted_msg))
         self.textbox.text = ""
 
     def print_message(self, msg):
-        msg_send = msg
         if msg.startswith("-----BEGIN PGP MESSAGE-----"):
-            decrypted = self.tmp.decrypt_string(msg)
-            if decrypted != '':
-                msg_send = decrypted
-        self.label.text += '[{time}] {msg}\n'.format(
-            time=timestamp(), msg=msg_send)
+            decrypted_msg = self.tmp.decrypt_string(msg)
+            if decrypted_msg != '###Passphrase unable to decrypt data###':
+                self.label.text += '[{time}] {msg}\n'.format(
+                    time=timestamp(), msg=decrypted_msg)
+        else:
+            self.label.text += '[{time}] {msg}\n'.format(
+                time=timestamp(), msg=msg)
 
 
 def timestamp():

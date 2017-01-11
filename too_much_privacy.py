@@ -225,7 +225,7 @@ class TooMuchPrivacy:
         if str(decrypted_data) != '':
             return decrypted_data
         else:
-            return "*Passphrase unable to decrypt data*"
+            return "###Passphrase unable to decrypt data###"
 
     def encrypt_string(self, str_unencrypted):
         """Encrypt every character entered using PGP"""
