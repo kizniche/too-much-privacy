@@ -30,8 +30,9 @@ class ChatProtocol(basic.LineReceiver):
         print("{user} Disconnected".format(user=self.login))
         self.factory.clients.pop(self.login)
         for login, protocol in self.factory.clients.items():
-            protocol.sendLine("[color=f1c40f]{user} quit[/color]#####END#####".format(
-                user=self.login))
+            protocol.sendLine(
+                "[color=f1c40f]{user} quit[/color]#####END#####".format(
+                    user=self.login))
 
     def dataReceived(self, data):
         print('[{time}] Raw_DATA="{data}"'.format(
@@ -59,16 +60,20 @@ class ChatProtocol(basic.LineReceiver):
                                                   user=self.login))
             self.factory.clients[self.login] = self
             for login, protocol in self.factory.clients.items():
-                protocol.sendLine("[color=f1c40f]{user} joined[/color]#####END#####".format(
-                    user=self.login))
+                protocol.sendLine(
+                    "[color=f1c40f]{user} joined[/color]#####END#####".format(
+                        user=self.login))
         elif data == 'exit':
             self.transport.write('Bye!')
             self.transport.loseConnection()
         else:
             for login, protocol in self.factory.clients.items():
                 if self.login == login:
-                    print("Self: MSG NOT Sent to {}/{}".format(login, self.login))
+                    print("Self: MSG NOT Sent to {}/{}".format(login,
+                                                               self.login))
                     # Communicate back to the user that sent the data
+                    # protocol.sendLine("Data successfully reached server for "
+                    #                   "distribution.".format(data=data))
                     pass
                 else:
                     print("MSG Sent to {}/{}".format(login, self.login))
@@ -88,6 +93,7 @@ def timestamp():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-print("[{time}] Server started".format(time=timestamp()))
-reactor.listenTCP(port, ChatFactory())
-reactor.run()
+if __name__ == '__main__':
+    print("[{time}] Server started".format(time=timestamp()))
+    reactor.listenTCP(port, ChatFactory())
+    reactor.run()

@@ -1,4 +1,3 @@
-
 import datetime
 
 from Queue import Empty
@@ -14,25 +13,6 @@ install_twisted_reactor()
 # A simple Client that send messages to the echo server
 from twisted.internet import reactor, protocol
 from twisted.protocols import basic
-
-from too_much_privacy import TooMuchPrivacy
-
-
-# class ChatClient:
-#     def __init__(self, root_box):
-#         self.root_box = root_box
-#         if self.connect():
-#             self.start_chat()
-#
-#     def connect(self):
-#         chat = TMPClient(self.root_box)
-#         chat.connect_to_server()
-#         return True
-#
-#     def start_chat(self):
-#         self.root_box.menu.show_item('Chats', select='Chats')
-#         self.root_box.ids.screen_manager.current = 'Chats'
-#         self.root_box.chat_box.add_chat("test")
 
 
 class EchoClient(basic.LineReceiver):
@@ -93,10 +73,13 @@ class TMPClient():
         self.connection = None
         self.command = None
         self.parameters = None
-        if self.connect():
-            self.start_chat()
+        self.start_chat()
+        self.connect()
 
     def connect(self):
+        self.root_box.chat_box.echo_in_chat(
+            "Connecting to {host}:{port}".format(host=self.host,
+                                                 port=self.port))
         reactor.connectTCP(self.host, self.port, EchoFactory(self))
         return True
 
@@ -109,8 +92,9 @@ class TMPClient():
         self.root_box.chat_box.add_chat("test")
 
     def on_connection(self, connection):
-        self.root_box.chat_box.echo_in_chat("Successfully connected to {host}:{port}".format(
-             host=self.host, port=self.port))
+        self.root_box.chat_box.echo_in_chat(
+            "Successfully connected to {host}:{port}".format(host=self.host,
+                                                             port=self.port))
         self.connection = connection
         # Login
         self.connection.write('{user}#####END#####'.format(
@@ -128,29 +112,6 @@ class TMPClient():
             print('SENT_DATA="{msg}"'.format(msg=encrypted_msg))
             self.connection.write('{msg}#####END#####'.format(
                 msg=encrypted_msg))
-
-    def send_message(self, *args):
-        if len(str(self.textbox.text)) > 0 and str(self.textbox.text)[0] == '/':
-            options = str(self.textbox.text)[1:].split(' ')
-            self.command = options[0]
-            del options[0]
-            self.parameters = options
-            self.print_message("[{time}] Got a '/'. Command: '{cmd}', "
-                               "Parameters: {param}".format(
-                time=self.timestamp(),
-                cmd=self.command,
-                param=self.parameters))
-        else:
-            message = '{user}: {msg}'.format(user=self.username,
-                                              msg=str(self.textbox.text))
-            if message and self.connection:
-                encrypted_msg = self.tmp.encrypt_string(message)
-                print('SENT_DATA="{msg}"'.format(msg=encrypted_msg))
-                self.label.text += '[{time}] {msg}\n'.format(
-                    time=timestamp(), user=self.username, msg=message)
-                self.connection.write('{msg}#####END#####'.format(
-                    msg=encrypted_msg))
-        self.textbox.text = ""
 
     def print_message(self, msg):
         send_msg = msg
