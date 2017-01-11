@@ -12,17 +12,29 @@ from twisted.protocols import basic
 
 
 class EchoClient(basic.LineReceiver):
+    def __init__(self):
+        self.total_data = []
+        self.stop_str = '#####END#####'
+
     def connectionMade(self):
         self.factory.app.on_connection(self.transport)
         self.factory.app.print_message("Connection made")
 
     def lineReceived(self, line):
-        print('LINE="{}"'.format(line))
-        self.factory.app.print_message(line)
+        print('Raw_LINE="{}"'.format(line))
+        self.combine_data(line)
 
     def dataReceived(self, data):
-        print('DATA="{}"'.format(data))
-        self.factory.app.print_message(data)
+        print('Raw_DATA="{}"'.format(data))
+        self.combine_data(data)
+
+    def combine_data(self, data):
+        self.total_data.append(data)
+        if self.stop_str in data:
+            total_data_joined = ''.join(self.total_data).split(self.stop_str)[0]
+            print('Rec_DATA="{}"'.format(total_data_joined))
+            self.factory.app.print_message(total_data_joined)
+            self.total_data = []
 
 
 class EchoFactory(protocol.ClientFactory):
@@ -87,7 +99,7 @@ class TMPClientApp(App):
             host=self.host, port=self.port))
         self.connection = connection
         # Login
-        self.connection.write('{user}'.format(user=self.username))
+        self.connection.write('{user}#####END#####'.format(user=self.username))
 
     def send_message(self, *args):
         if str(self.textbox.text)[0] == '/':
@@ -101,7 +113,9 @@ class TMPClientApp(App):
         else:
             message = '{msg}'.format(msg=str(self.textbox.text))
             if message and self.connection:
-                self.connection.write('{msg}'.format(msg=self.tmp.encrypt_string(message)))
+                encrypted_msg = self.tmp.encrypt_string(message)
+                print('SENT_DATA="{msg}"'.format(msg=encrypted_msg))
+                self.connection.write('{msg}#####END#####'.format(msg=encrypted_msg))
         self.textbox.text = ""
 
     def print_message(self, msg):
