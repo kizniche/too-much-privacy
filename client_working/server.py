@@ -11,7 +11,7 @@ if len(sys.argv) != 2:
 port = int(sys.argv[1])
 
 # simple single-room chat server, derived from publish/subscribe
-from twisted.internet import reactor, protocol
+from twisted.internet import ssl, reactor, protocol
 from twisted.protocols import basic
 
 
@@ -97,5 +97,6 @@ def timestamp():
 
 if __name__ == '__main__':
     print("[{time}] Server started".format(time=timestamp()))
-    reactor.listenTCP(port, ChatFactory())
+    reactor.listenSSL(port, ChatFactory(), ssl.DefaultOpenSSLContextFactory(
+            'ssl_certs/privkey.pem', 'ssl+certs/cert.pem'))
     reactor.run()

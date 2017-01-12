@@ -11,14 +11,14 @@ from kivy.support import install_twisted_reactor
 install_twisted_reactor()
 
 # A simple Client that send messages to the echo server
-from twisted.internet import reactor, protocol
+from twisted.internet import ssl, reactor, protocol
 from twisted.protocols import basic
 
 
 class EchoClient(basic.LineReceiver):
     def __init__(self):
         self.total_data = []
-        self.stop_str = '\n'
+        self.stop_msg = '#####END#####'
 
     def connectionMade(self):
         pass
@@ -73,8 +73,7 @@ class TMPClient():
         self.connection = None
         self.command = None
         self.parameters = None
-        # self.stop_msg = '#####END#####'
-        self.stop_msg = '\n'
+        self.stop_msg = '#####END#####'
         self.start_chat()
         self.connect()
 
@@ -82,7 +81,8 @@ class TMPClient():
         self.root_box.chat_box.echo_in_chat(
             "Connecting to {host}:{port}".format(host=self.host,
                                                  port=self.port))
-        reactor.connectTCP(self.host, self.port, EchoFactory(self))
+        reactor.connectSSL(self.host, self.port, EchoFactory(self),
+                           ssl.ClientContextFactory())
         return True
 
     def disconnect(self, wait):
@@ -112,15 +112,13 @@ class TMPClient():
         if message and self.connection:
             encrypted_msg = self.tmp.encrypt_string(message)
             print('PGP_DATA="{msg}"'.format(msg=encrypted_msg))
-            double_encrypted_msg = self.tmp.encrypt_aes(encrypted_msg)
             self.connection.write('{msg}{stop}'.format(
-                msg=double_encrypted_msg, stop=self.stop_msg))
+                msg=encrypted_msg, stop=self.stop_msg))
 
     def print_message(self, msg):
         send_msg = msg
         if msg.startswith("-----BEGIN PGP MESSAGE-----"):
-            double_encrypted_msg = self.tmp.decrypt_aes(msg)
-            decrypted_msg = self.tmp.decrypt_string(double_encrypted_msg)
+            decrypted_msg = self.tmp.decrypt_string(msg)
             if decrypted_msg != '###Passphrase unable to decrypt data###':
                 send_msg = decrypted_msg
         self.root_box.chat_box.add_message_other(send_msg)
