@@ -1,6 +1,8 @@
 # private directories and files
-*gnupg
+*gnupg/
+*ssl_certs/
 *.asc
+*.pem
 
 ### C template
 # Object files

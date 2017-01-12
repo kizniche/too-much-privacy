@@ -35,8 +35,8 @@ class EchoClient(basic.LineReceiver):
 
     def combine_data(self, data):
         self.total_data.append(data)
-        if self.stop_str in data:
-            total_data_joined = ''.join(self.total_data).split(self.stop_str)
+        if self.stop_msg in data:
+            total_data_joined = ''.join(self.total_data).split(self.stop_msg)
             print('Rec_DATA="{}"'.format(total_data_joined[0]))
             # self.factory.app.print_message(total_data_joined[0])
             self.factory.app.print_message(total_data_joined[0])

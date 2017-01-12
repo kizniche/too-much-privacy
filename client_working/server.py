@@ -98,5 +98,5 @@ def timestamp():
 if __name__ == '__main__':
     print("[{time}] Server started".format(time=timestamp()))
     reactor.listenSSL(port, ChatFactory(), ssl.DefaultOpenSSLContextFactory(
-            'ssl_certs/privkey.pem', 'ssl+certs/cert.pem'))
+            'ssl_certs/privkey.pem', 'ssl_certs/cert.pem'))
     reactor.run()
