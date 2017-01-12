@@ -232,7 +232,9 @@ class TooMuchPrivacy:
 
     def encrypt_string(self, str_unencrypted):
         """Encrypt every character entered using PGP"""
-        encrypted_data = self.gpg.encrypt(str_unencrypted, self.key_pub_id)
+        encrypted_data = self.gpg.encrypt(str_unencrypted,
+                                          self.key_pub_id,
+                                          hidden_recipients=self.key_pub_id)
         str_encrypted = str(encrypted_data)
         # print('\nok: {ok}'.format(ok=encrypted_data.ok))
         # print('\nstatus: {stat}'.format(stat=encrypted_data.status))
@@ -241,24 +243,6 @@ class TooMuchPrivacy:
         log.info('Encrypted string:\n{e_str}'.format(e_str=str_encrypted))
 
         return str_encrypted
-
-    def decrypt_aes(self, encrypted_msg, iv='1234567812345678'):
-        if len(self.key_their) not in (16, 24, 32):
-            raise ValueError("Key must be 16, 24, or 32 bytes")
-        if (len(encrypted_msg) % 16) != 0:
-            raise ValueError("Message must be a multiple of 16 bytes")
-        if len(iv) != 16:
-            raise ValueError("IV must be 16 bytes")
-        cipher = AES.new(self.key_their, AES.MODE_CBC, iv)
-        plaintext = cipher.decrypt(encrypted_msg)
-        return plaintext
-
-    def encrypt_aes(self, unencrypted_msg, iv='1234567812345678'):
-        aes = AES.new(self.key_mine, AES.MODE_CBC, iv)
-        if len(unencrypted_msg) % 16 != 0:
-            unencrypted_msg += ' ' * (16 - len(unencrypted_msg) % 16)
-        encrypted_msg = aes.encrypt(unencrypted_msg)
-        return encrypted_msg
 
     def export_keys(self, key):
         """Export PGP keys"""

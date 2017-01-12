@@ -5,7 +5,7 @@ import errno
 import sys
 
 if len(sys.argv) != 2:
-    print 'Required parameter not passed. Run:\n\n\t./chat-server.py <port>\n'
+    print('Required parameter not passed. Run:\n\n\t./chat-server.py <port>\n')
     sys.exit(errno.EINVAL)
 
 port = int(sys.argv[1])
@@ -24,6 +24,10 @@ class ChatProtocol(basic.LineReceiver):
 
     def connectionMade(self):
         print("[{time}] Connection".format(time=timestamp()))
+        # try:
+        #     self.transport.setTcpKeepAlive(1)
+        # except AttributeError:
+        #     pass
         # self.transport.write('Register your login > ')
 
     def connectionLost(self, reason):

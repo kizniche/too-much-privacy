@@ -26,19 +26,19 @@ class EchoClient(basic.LineReceiver):
         # self.factory.app.print_message("Connection made")
 
     def lineReceived(self, line):
-        print('Raw_LINE="{}"'.format(line))
+        # print('Raw_LINE="{}"'.format(line))
         self.combine_data(line)
 
     def dataReceived(self, data):
-        print('Raw_DATA="{}"'.format(data))
+        # print('Raw_DATA="{}"'.format(data))
         self.combine_data(data)
 
     def combine_data(self, data):
         self.total_data.append(data)
         if self.stop_msg in data:
             total_data_joined = ''.join(self.total_data).split(self.stop_msg)
-            print('Rec_DATA="{}"'.format(total_data_joined[0]))
-            # self.factory.app.print_message(total_data_joined[0])
+            # print('Rec_DATA="{}"'.format(total_data_joined[0]))
+            # self.factory.aplp.print_message(total_data_joined[0])
             self.factory.app.print_message(total_data_joined[0])
             self.total_data = []
 
@@ -63,9 +63,6 @@ class EchoFactory(protocol.ClientFactory):
 class TMPClient():
     def __init__(self, root_box, tmp, username):
         self.root_box = root_box
-        # self.tmp = TooMuchPrivacy()
-        # self.username = self.tmp.select_keys_and_passphrase()
-        # self.username = "asdf"
         self.tmp = tmp
         self.username = username
         self.host = 'fungi.kylegabriel.com'
@@ -79,7 +76,7 @@ class TMPClient():
 
     def connect(self):
         self.root_box.chat_box.echo_in_chat(
-            "Connecting to {host}:{port}".format(host=self.host,
+            "Connecting to {host}:{port} with SSL".format(host=self.host,
                                                  port=self.port))
         reactor.connectSSL(self.host, self.port, EchoFactory(self),
                            ssl.ClientContextFactory())
@@ -92,6 +89,16 @@ class TMPClient():
         self.root_box.menu.show_item('Chats', select='Chats')
         self.root_box.ids.screen_manager.current = 'Chats'
         self.root_box.chat_box.add_chat("test")
+        self.root_box.chat_box.add_raw_message(
+            "Welcome to\n\n"
+            "_/_/_/_/_/  _/      _/  _/_/_/\n"
+            "   _/      _/_/  _/_/  _/    _/\n"
+            "  _/      _/  _/  _/  _/_/_/\n"
+            " _/      _/      _/  _/\n"
+            "_/      _/      _/  _/\n\n"
+            "Too Much Privacy (seriously) version 1.0\n"
+            "Copyright (C) 2017 Kyle Gabriel (kylegabriel.com)\n"
+            "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html")
 
     def on_connection(self, connection):
         self.root_box.chat_box.echo_in_chat(
@@ -111,7 +118,7 @@ class TMPClient():
                 user=self.username, msg=text)
         if message and self.connection:
             encrypted_msg = self.tmp.encrypt_string(message)
-            print('PGP_DATA="{msg}"'.format(msg=encrypted_msg))
+            # print('PGP_DATA="{msg}"'.format(msg=encrypted_msg))
             self.connection.write('{msg}{stop}'.format(
                 msg=encrypted_msg, stop=self.stop_msg))
 

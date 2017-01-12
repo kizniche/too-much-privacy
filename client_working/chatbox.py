@@ -151,6 +151,10 @@ class ChatBox(TabBox):
         message_box = self.chats["TMP"]['message_box']
         message_box.add_echo_message(msg)
 
+    def add_raw_message(self, msg):
+        message_box = self.chats["TMP"]['message_box']
+        message_box.add_to_chat(msg)
+
 
 def timestamp():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

@@ -71,7 +71,7 @@ class RootBox(BoxLayout):
         self.chat_client = TMPClient(self, tmp, username)
 
     def quit_pushed(self, *args):
-        print 'Disconnecting...'
+        print('Disconnecting...')
         if self.chat_client:
             self.chat_client.disconnect(wait=True)
         quit()
@@ -131,7 +131,7 @@ class TMPChatApp(App):
     def pushed_close(self, *args):
         # can't trap the window close button, but can force the disconnect
         # when it is pushed
-        print 'Disconnecting...'
+        print('Disconnecting...')
         if self.root_box.chat_client:
             self.root_box.chat_client.disconnect(wait=True)
 
