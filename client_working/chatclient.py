@@ -18,7 +18,7 @@ from twisted.protocols import basic
 class EchoClient(basic.LineReceiver):
     def __init__(self):
         self.total_data = []
-        self.stop_str = '#####END#####'
+        self.stop_str = '\n'
 
     def connectionMade(self):
         pass
@@ -73,6 +73,8 @@ class TMPClient():
         self.connection = None
         self.command = None
         self.parameters = None
+        # self.stop_msg = '#####END#####'
+        self.stop_msg = '\n'
         self.start_chat()
         self.connect()
 
@@ -97,8 +99,8 @@ class TMPClient():
                                                              port=self.port))
         self.connection = connection
         # Login
-        self.connection.write('{user}#####END#####'.format(
-            user=self.username))
+        self.connection.write('{user}{stop}'.format(
+            user=self.username, stop=self.stop_msg))
 
     def send_chat(self, user, text):
         if '\n' in text:
@@ -111,8 +113,8 @@ class TMPClient():
             encrypted_msg = self.tmp.encrypt_string(message)
             print('PGP_DATA="{msg}"'.format(msg=encrypted_msg))
             double_encrypted_msg = self.tmp.encrypt_aes(encrypted_msg)
-            self.connection.write('{msg}#####END#####'.format(
-                msg=double_encrypted_msg))
+            self.connection.write('{msg}{stop}'.format(
+                msg=double_encrypted_msg, stop=self.stop_msg))
 
     def print_message(self, msg):
         send_msg = msg
