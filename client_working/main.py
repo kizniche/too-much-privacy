@@ -18,7 +18,7 @@ from kivy.core.window import Window
 
 from chatbox import ChatBox
 from chatclient import TMPClient
-from friends import FriendBox
+from servers import ServerBox
 from utils import ConfirmPopup, Menu, load_kv_files
 
 
@@ -49,9 +49,9 @@ class RootBox(BoxLayout):
         self.chat_box = ChatBox()
         self.ids.chat_box_container.add_widget(self.chat_box)
         
-        # don't add friend_box just yet, it has the connection status label in
+        # don't add server_list just yet, it has the connection status label in
         # it
-        # self.friend_box = FriendBox(self)
+        # self.server_list = ServerBox(self)
 
         # store = JsonStore('storage.json')
         # try:
@@ -93,12 +93,12 @@ class RootBox(BoxLayout):
             # wherever we were
             self.menu.text = self.ids.screen_manager.current
         elif text == 'Chats':
-            # go to chat screen and clear the current tab's friend's message
+            # go to chat screen and clear the current tab's server's message
             # count
             self.ids.screen_manager.current = text
             current_tab = self.chat_box.ids.tab_content.current
             try:
-                self.chat_box.chats[current_tab]['friend'].message_count = 0
+                self.chat_box.chats[current_tab]['server'].message_count = 0
             except KeyError:
                 # there is no current tab, do nothing
                 pass

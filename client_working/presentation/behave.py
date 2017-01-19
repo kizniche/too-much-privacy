@@ -8,15 +8,15 @@ class DoubleClickBehavior(ButtonBehavior):
 
 
 
-class FriendLabel(DoubleClickBehavior, TextBoxLabel):
+class ServerLabel(DoubleClickBehavior, TextBoxLabel):
     def pushed(self, *args):
-        friend = self.parent.friend
-        if friend.status != 'online':
+        server = self.parent.server
+        if server.status != 'online':
             return
 
         # click means start/switch to a conversation
-        self.friend.message_count = 0
+        self.server.message_count = 0
         app = App.get_running_app()
         app.root_box.menu.show_item('Chats', select='Chats')
         app.root_box.ids.screen_manager.current = 'Chats'
-        app.root_box.chat_box.add_chat(friend)
+        app.root_box.chat_box.add_chat(server)

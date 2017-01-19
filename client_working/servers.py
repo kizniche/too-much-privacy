@@ -9,9 +9,10 @@ from kivy.uix.widget import Widget
 
 from utils import TextBoxLabel, DoubleClickBehavior
 
+
 # ============================================================================
 
-class Friend(Widget):
+class Server(Widget):
     name = StringProperty()
     status = StringProperty()
     message_count = NumericProperty(0)
@@ -36,58 +37,58 @@ class Friend(Widget):
             self.name = self.base_name
 
 
-def sort_by(sort_key, friends, reverse):
+def sort_by(sort_key, servers, reverse):
     if sort_key == 'status':
         # if sorting by status, sort by display name then by status
-        friends.sort(key=attrgetter('name'), reverse=reverse)
+        servers.sort(key=attrgetter('name'), reverse=reverse)
 
-    friends.sort(key=attrgetter(sort_key), reverse=reverse)
+    servers.sort(key=attrgetter(sort_key), reverse=reverse)
 
 # ============================================================================
 # Widgets
 # ============================================================================
 
-class FriendLabel(DoubleClickBehavior, TextBoxLabel):
-    def __init__(self, friend, *args, **kwargs):
-        self.friend = friend
-        super(FriendLabel, self).__init__(*args, **kwargs)
+class ServerLabel(DoubleClickBehavior, TextBoxLabel):
+    def __init__(self, server, *args, **kwargs):
+        self.server = server
+        super(ServerLabel, self).__init__(*args, **kwargs)
         self.name_changed()
         self.bind(on_release=self.pushed)
-        self.friend.bind(name=self.name_changed)
+        self.server.bind(name=self.name_changed)
 
     def name_changed(self, *args):
-        self.text = '%s\n%s' % (self.friend.name, self.friend.userid)
+        self.text = '%s\n%s' % (self.server.name, self.server.userid)
 
     def pushed(self, *args):
-        friend = self.parent.friend
-        if friend.status != 'online':
+        server = self.parent.server
+        if server.status != 'online':
             return
 
         # click means start/switch to a conversation
-        self.friend.message_count = 0
+        self.server.message_count = 0
         app = App.get_running_app()
         app.root_box.menu.show_item('Chats', select='Chats')
         app.root_box.ids.screen_manager.current = 'Chats'
-        app.root_box.chat_box.add_chat(friend)
+        app.root_box.chat_box.add_chat(server)
 
 
 class FriendRow(BoxLayout):
-    def __init__(self, friend, *args, **kwargs):
-        self.friend = friend
+    def __init__(self, server, *args, **kwargs):
+        self.server = server
         super(FriendRow, self).__init__(*args, **kwargs)
 
-        label = FriendLabel(friend)
+        label = ServerLabel(server)
         label.bind(height=self.text_height_changed)
         self.add_widget(label)
 
-        self.friend.bind(status=self.change_status)
+        self.server.bind(status=self.change_status)
         self.change_status()
 
     def change_status(self, *args):
         # find the Color object under our status widget and change it
         for instruction in self.ids.status_widget.canvas.before.children: 
             if isinstance(instruction, Color):
-                if self.friend.status == 'offline':
+                if self.server.status == 'offline':
                     instruction.r = 1
                     instruction.g = 0
                 else:
@@ -100,13 +101,13 @@ class FriendRow(BoxLayout):
         self.height = value + 5
 
     def __str__(self):
-        return 'FriendRow(%s)' % self.friend.name
+        return 'FriendRow(%s)' % self.server.name
 
 
-class FriendBox(BoxLayout):
+class ServerBox(BoxLayout):
     def __init__(self, root_box, *args, **kwargs):
         self.root_box = root_box
-        super(FriendBox, self).__init__(*args, **kwargs)
+        super(ServerBox, self).__init__(*args, **kwargs)
         self.friend_rows = {}
 
         # create a grid for the scroll view to contain things
@@ -126,31 +127,31 @@ class FriendBox(BoxLayout):
         else:
             sort_key = 'status'
 
-        # find all the friends in the friend rows
-        friends = [row.friend for row in self.layout.children]
+        # find all the servers in the server rows
+        servers = [row.server for row in self.layout.children]
         reverse = self.ids.sort_order.text == '^'
-        sort_by(sort_key, friends, reverse)
+        sort_by(sort_key, servers, reverse)
 
         # remove old widgets, replace with new ones
         self.layout.clear_widgets()
         self.friend_rows = {}
-        self.add_friends(friends)
+        self.add_servers(servers)
 
     def change_status(self, userid, status):
         try:
-            self.friend_rows[userid].friend.status = status
+            self.friend_rows[userid].server.status = status
         except KeyError:
             # no matching userid, probably a chat room, ignore it
             pass
 
-    def add_friend(self, friend):
-        if friend.userid in self.friend_rows:
+    def add_friend(self, server):
+        if server.userid in self.friend_rows:
             return
 
-        row = FriendRow(friend)
-        self.friend_rows[friend.userid] = row
+        row = FriendRow(server)
+        self.friend_rows[server.userid] = row
         self.layout.add_widget(row)
 
-    def add_friends(self, friends):
-        for friend in friends:
-            self.add_friend(friend)
+    def add_servers(self, servers):
+        for server in servers:
+            self.add_friend(server)

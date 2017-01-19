@@ -13,3 +13,19 @@
         height: 50
         multiline: True
         focus: True
+
+<CommandBox>:
+    size_hint: (1, 1)
+    orientation: 'vertical'
+
+    ScrollView:
+        id: scroller
+        size_hint: (1, 1)
+        do_scroll_x: False
+
+    MessageCMDInput:
+        id: message_input
+        size_hint: (1, None)
+        height: 50
+        multiline: True
+        focus: True
